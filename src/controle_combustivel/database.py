@@ -37,12 +37,17 @@ def criar_tabelas():
         return {"success": False,
                 "message": f"Erro na criação da tabela 'abastecimentos': {e}"}
     
-    return ("success": True, "message":"Tabelas criadas com sucesso")
+    return {"success": True, "message":"Tabelas criadas com sucesso"}
 
 def popular_dados_iniciais():
     try:
-        importlib
+        import importlib
         seed = importlib.import_module("seed")
-        seed.popular()
+        with get_connection() as conn:
+            seed.popular(conn)
     except ModuleNotFoundError:
         pass
+    
+def inicializar_db():
+    criar_tabelas()
+    popular_dados_iniciais()
