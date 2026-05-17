@@ -38,3 +38,11 @@ def criar_tabelas():
                 "message": f"Erro na criação da tabela 'abastecimentos': {e}"}
     
     return ("success": True, "message":"Tabelas criadas com sucesso")
+
+def popular_dados_iniciais():
+    try:
+        importlib
+        seed = importlib.import_module("seed")
+        seed.popular()
+    except ModuleNotFoundError:
+        pass
