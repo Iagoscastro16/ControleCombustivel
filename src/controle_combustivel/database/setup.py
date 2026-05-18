@@ -1,6 +1,6 @@
 from pathlib import Path
 import sqlite3
-from config import  DB_PATH
+from database.connection import  DB_PATH
 
 
 def get_connection():

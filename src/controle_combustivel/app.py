@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from database import inicializar_db
-from tela_main import TelaMain
+from database.setup import inicializar_db
+from UI.tela_main import TelaMain
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")

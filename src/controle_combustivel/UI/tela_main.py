@@ -180,11 +180,11 @@ class TelaMain(ctk.CTkFrame):
         self.lbl_contador.configure(text=f"{qtd} lançamentos este mês")
 
     def _abrir_veiculos(self):
-        from tela_veiculos import TelaVeiculos
+        from UI.tela_veiculos import TelaVeiculos
         TelaVeiculos(self.master)
 
     def _abrir_relatorio(self):
-        from tela_relatorio import TelaRelatorio
+        from UI.tela_relatorio import TelaRelatorio
         TelaRelatorio(self.master)
 
     # ── Backend — construir junto ─────────────────────────────
