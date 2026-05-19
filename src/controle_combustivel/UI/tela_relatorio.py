@@ -324,11 +324,26 @@ class TelaRelatorio(ctk.CTkToplevel):
             self._mostrar_status(f"Erro ao exportar: {e}", sucesso=False)
 
     def _imprimir(self):
-        if not self._ultimo_excel:
-            self._mostrar_status("Exporte o Excel primeiro!", sucesso=False)
+        if not hasattr(self, '_ultimo_dados'):
+            self._mostrar_status("Gere o relatório primeiro!", sucesso=False)
             return
 
         try:
-            os.startfile(self._ultimo_excel, "print")
+            import tempfile
+            import platform
+            from functions.relatorio import exportar_excel
+
+            # cria arquivo temporário
+            with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+                caminho_tmp = tmp.name
+
+            exportar_excel(self._ultimo_dados, self.combo_ano.get(), caminho_tmp)
+
+            if platform.system() == "Windows":
+                os.startfile(caminho_tmp, "print")
+            else:
+                import subprocess
+                subprocess.Popen(["xdg-open", caminho_tmp])
+
         except Exception as e:
             self._mostrar_status(f"Erro ao imprimir: {e}", sucesso=False)
