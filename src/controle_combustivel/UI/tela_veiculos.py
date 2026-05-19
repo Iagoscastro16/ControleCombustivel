@@ -52,7 +52,6 @@ class TelaVeiculos(ctk.CTkToplevel):
         card_lista = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_lista.pack(padx=24, pady=(20, 10), fill="both", expand=True)
 
-        # Cabeçalho da lista com toggle
         frame_topo = ctk.CTkFrame(card_lista, fg_color="transparent")
         frame_topo.pack(fill="x", padx=16, pady=(16, 8))
 
@@ -76,6 +75,8 @@ class TelaVeiculos(ctk.CTkToplevel):
             card_lista, fg_color="transparent", height=220
         )
         self.frame_lista.pack(fill="both", expand=True, padx=16, pady=(0, 16))
+        self.frame_lista.bind_all("<Button-4>", self._scroll_up)
+        self.frame_lista.bind_all("<Button-5>", self._scroll_down)
 
         self._atualizar_lista()
 
@@ -130,6 +131,18 @@ class TelaVeiculos(ctk.CTkToplevel):
             command=self._adicionar,
         ).pack(fill="x", padx=16, pady=(8, 16))
 
+    def _scroll_up(self, event):
+        try:
+            self.frame_lista._parent_canvas.yview_scroll(-1, "units")
+        except Exception:
+            pass
+
+    def _scroll_down(self, event):
+        try:
+            self.frame_lista._parent_canvas.yview_scroll(1, "units")
+        except Exception:
+            pass
+
     def _atualizar_lista(self):
         for widget in self.frame_lista.winfo_children():
             widget.destroy()
@@ -146,8 +159,6 @@ class TelaVeiculos(ctk.CTkToplevel):
             return
 
         for registro in veiculos:
-            # quando mostrar inativos vem (id, nome, categoria, ativo)
-            # quando só ativos vem (id, nome, categoria)
             if len(registro) == 4:
                 id, nome, categoria, ativo = registro
             else:

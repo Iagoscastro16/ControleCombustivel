@@ -129,8 +129,22 @@ class TelaRelatorio(ctk.CTkToplevel):
             card_tabela, fg_color="transparent"
         )
         self.frame_tabela.pack(fill="both", expand=True, padx=16, pady=16)
+        self.frame_tabela.bind_all("<Button-4>", self._scroll_up)
+        self.frame_tabela.bind_all("<Button-5>", self._scroll_down)
 
         self._mostrar_placeholder()
+
+    def _scroll_up(self, event):
+        try:
+            self.frame_tabela._parent_canvas.yview_scroll(-1, "units")
+        except Exception:
+            pass
+
+    def _scroll_down(self, event):
+        try:
+            self.frame_tabela._parent_canvas.yview_scroll(1, "units")
+        except Exception:
+            pass
 
     def _mostrar_placeholder(self):
         for widget in self.frame_tabela.winfo_children():
@@ -255,7 +269,6 @@ class TelaRelatorio(ctk.CTkToplevel):
             self._mostrar_status(dados_crus["message"], sucesso=False)
             return
 
-        # Transforma os dados crus em formato para a tabela
         veiculos_dict = {}
         for nome, categoria, mes, valor in dados_crus:
             if nome not in veiculos_dict:
@@ -266,13 +279,11 @@ class TelaRelatorio(ctk.CTkToplevel):
             indice = int(mes) - 1
             veiculos_dict[nome]["valores"][indice] = valor
 
-        # Monta lista ordenada por categoria e nome
         veiculos_lista = sorted(
             [(nome, info["categoria"], info["valores"]) for nome, info in veiculos_dict.items()],
             key=lambda x: (x[1], x[0])
         )
 
-        # Calcula totais por mês
         totais_mes = [0.0] * 12
         for _, _, valores in veiculos_lista:
             for i, val in enumerate(valores):
