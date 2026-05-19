@@ -1,7 +1,13 @@
 import sqlite3
 from pathlib import Path
+import sys
 
-ROOT = Path(__file__).parent.parent.parent.parent
+def pasta_app():
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).parent
+    return Path(__file__).parent.parent.parent.parent
+
+ROOT =pasta_app()
 DB_PATH = ROOT/ "data" / "combustivel.db"
 DATA_DIR = ROOT / "data"
 

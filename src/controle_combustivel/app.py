@@ -3,11 +3,17 @@ from database.setup import inicializar_db
 from UI.tela_main import TelaMain
 from UI.tela_veiculos import TelaVeiculos
 from UI.tela_relatorio import TelaRelatorio
+from database.backup import fazer_backup
+
+
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 inicializar_db()
+
+fazer_backup()
+
 
 janela = ctk.CTk()
 janela.title("Controle de Combustível")
