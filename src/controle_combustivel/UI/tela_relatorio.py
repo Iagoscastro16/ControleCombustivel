@@ -1,5 +1,8 @@
+import os
 import customtkinter as ctk
 from datetime import datetime
+from tkinter import filedialog
+from functions.relatorio import gerar_relatorio
 
 CORES = {
     "header":    "#1A1A2E",
@@ -28,10 +31,10 @@ class TelaRelatorio(ctk.CTkToplevel):
         self.geometry("960x720")
         self.resizable(True, True)
         self.after(100, self.grab_set)
+        self._ultimo_excel = None
         self._construir()
 
     def _construir(self):
-        # ── Header ───────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color=CORES["header"], corner_radius=0, height=60)
         header.pack(fill="x")
         header.pack_propagate(False)
@@ -54,7 +57,6 @@ class TelaRelatorio(ctk.CTkToplevel):
             command=self.destroy,
         ).pack(side="right", padx=16)
 
-        # ── Controles ─────────────────────────────────────────
         card_ctrl = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_ctrl.pack(padx=24, pady=(20, 10), fill="x")
 
@@ -112,7 +114,6 @@ class TelaRelatorio(ctk.CTkToplevel):
             command=self._imprimir,
         ).pack(side="left")
 
-        # Label de status (exportar/imprimir)
         self.lbl_status = ctk.CTkLabel(
             card_ctrl,
             text="",
@@ -121,7 +122,6 @@ class TelaRelatorio(ctk.CTkToplevel):
         )
         self.lbl_status.pack(pady=(0, 8))
 
-        # ── Tabela ────────────────────────────────────────────
         card_tabela = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_tabela.pack(padx=24, pady=(0, 24), fill="both", expand=True)
 
@@ -131,8 +131,6 @@ class TelaRelatorio(ctk.CTkToplevel):
         self.frame_tabela.pack(fill="both", expand=True, padx=16, pady=16)
 
         self._mostrar_placeholder()
-
-    # ── Helpers de UI ────────────────────────────────────────
 
     def _mostrar_placeholder(self):
         for widget in self.frame_tabela.winfo_children():
@@ -146,14 +144,6 @@ class TelaRelatorio(ctk.CTkToplevel):
         ).pack(pady=50)
 
     def _renderizar_tabela(self, dados):
-        """
-        Recebe dados no formato:
-        {
-          "veiculos": [(nome, categoria, [v1..v12]), ...],
-          "totais_mes": [v1..v12]
-        }
-        E monta a tabela na tela.
-        """
         for widget in self.frame_tabela.winfo_children():
             widget.destroy()
 
@@ -161,7 +151,6 @@ class TelaRelatorio(ctk.CTkToplevel):
             self._mostrar_placeholder()
             return
 
-        # Cabeçalho
         header_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
         header_frame.pack(fill="x", pady=(0, 2))
         header_frame.columnconfigure(0, weight=3)
@@ -183,10 +172,8 @@ class TelaRelatorio(ctk.CTkToplevel):
                 text_color="#FFFFFF",
             ).grid(row=0, column=i + 1, padx=4, pady=6)
 
-        # Linhas por categoria
         categoria_atual = None
         for nome, categoria, valores in dados.get("veiculos", []):
-            # Separador de categoria
             if categoria != categoria_atual:
                 categoria_atual = categoria
                 sep = ctk.CTkFrame(self.frame_tabela, fg_color="#E5E7EB", corner_radius=0, height=2)
@@ -198,7 +185,6 @@ class TelaRelatorio(ctk.CTkToplevel):
                     text_color=CORES["texto_sec"],
                 ).pack(anchor="w", padx=8, pady=(2, 0))
 
-            # Linha do veículo
             row = ctk.CTkFrame(self.frame_tabela, fg_color="#F9FAFB", corner_radius=4)
             row.pack(fill="x", pady=1)
             row.columnconfigure(0, weight=3)
@@ -222,7 +208,6 @@ class TelaRelatorio(ctk.CTkToplevel):
                     text_color=CORES["texto"] if val else CORES["texto_sec"],
                 ).grid(row=0, column=i + 1, padx=4, pady=6)
 
-        # Linha TOTAL MÊS
         total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#375623", corner_radius=6)
         total_frame.pack(fill="x", pady=(8, 0))
         total_frame.columnconfigure(0, weight=3)
@@ -250,24 +235,89 @@ class TelaRelatorio(ctk.CTkToplevel):
         self.lbl_status.configure(text=msg, text_color=cor)
         self.after(3000, lambda: self.lbl_status.configure(text=""))
 
-    # ── Backend — construir junto ─────────────────────────────
-
     def _listar_anos(self):
-        # TODO: SELECT DISTINCT strftime('%Y', data) FROM abastecimentos
-        return [str(datetime.now().year)]
+        try:
+            from database.connection import get_connection
+            with get_connection() as conn:
+                cursor = conn.execute(
+                    "SELECT DISTINCT strftime('%Y', data) FROM abastecimentos ORDER BY 1 DESC"
+                )
+                anos = [row[0] for row in cursor.fetchall()]
+                return anos if anos else [str(datetime.now().year)]
+        except Exception:
+            return [str(datetime.now().year)]
 
     def _gerar(self):
         ano = self.combo_ano.get()
-        # TODO: buscar dados do banco agrupados por veículo e mês
-        # TODO: chamar self._renderizar_tabela(dados)
-        pass
+        dados_crus = gerar_relatorio(ano)
+
+        if isinstance(dados_crus, dict):
+            self._mostrar_status(dados_crus["message"], sucesso=False)
+            return
+
+        # Transforma os dados crus em formato para a tabela
+        veiculos_dict = {}
+        for nome, categoria, mes, valor in dados_crus:
+            if nome not in veiculos_dict:
+                veiculos_dict[nome] = {
+                    "categoria": categoria,
+                    "valores": [0.0] * 12
+                }
+            indice = int(mes) - 1
+            veiculos_dict[nome]["valores"][indice] = valor
+
+        # Monta lista ordenada por categoria e nome
+        veiculos_lista = sorted(
+            [(nome, info["categoria"], info["valores"]) for nome, info in veiculos_dict.items()],
+            key=lambda x: (x[1], x[0])
+        )
+
+        # Calcula totais por mês
+        totais_mes = [0.0] * 12
+        for _, _, valores in veiculos_lista:
+            for i, val in enumerate(valores):
+                totais_mes[i] += val
+
+        dados = {
+            "veiculos": veiculos_lista,
+            "totais_mes": totais_mes
+        }
+
+        self._ultimo_dados = dados
+        self._renderizar_tabela(dados)
 
     def _exportar_excel(self):
-        # TODO: abrir filedialog.asksaveasfilename para escolher destino
-        # TODO: gerar Excel com openpyxl (chamar relatorio.py)
-        # TODO: self._mostrar_status("Excel exportado com sucesso!")
-        pass
+        if not hasattr(self, '_ultimo_dados'):
+            self._mostrar_status("Gere o relatório primeiro!", sucesso=False)
+            return
+
+        ano = self.combo_ano.get()
+        mes_atual = datetime.now().strftime("%m")
+
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Excel", "*.xlsx")],
+            initialfile=f"COMBUSTIVEL_{ano}_{mes_atual}.xlsx",
+            title="Salvar relatório Excel"
+        )
+
+        if not caminho:
+            return
+
+        try:
+            from functions.relatorio import exportar_excel
+            exportar_excel(self._ultimo_dados, ano, caminho)
+            self._ultimo_excel = caminho
+            self._mostrar_status("Excel exportado com sucesso!")
+        except Exception as e:
+            self._mostrar_status(f"Erro ao exportar: {e}", sucesso=False)
 
     def _imprimir(self):
-        # TODO: gerar Excel temporário e abrir com os.startfile() para impressão
-        pass
+        if not self._ultimo_excel:
+            self._mostrar_status("Exporte o Excel primeiro!", sucesso=False)
+            return
+
+        try:
+            os.startfile(self._ultimo_excel, "print")
+        except Exception as e:
+            self._mostrar_status(f"Erro ao imprimir: {e}", sucesso=False)
