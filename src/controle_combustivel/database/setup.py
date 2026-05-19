@@ -35,13 +35,12 @@ def criar_tabelas():
 
 def popular_dados_iniciais():
     try:
-        import importlib
-        seed = importlib.import_module("database.seed")
+        from database import seed
         with get_connection() as conn:
             cursor = conn.execute("SELECT COUNT(*) FROM veiculos")
             if cursor.fetchone()[0] == 0:
                 seed.popular(conn)
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, ImportError):
         pass
     
 def inicializar_db():

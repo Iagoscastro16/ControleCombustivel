@@ -17,7 +17,7 @@ fazer_backup()
 
 janela = ctk.CTk()
 janela.title("Controle de Combustível")
-janela.state("zoomed")  # abre maximizado no Windows
+janela.after(100, lambda: janela.state("zoomed"))  # abre maximizado no Windows
 
 telas = {}
 tela_atual = None

@@ -25,6 +25,9 @@ MESES = [
     "Setembro", "Outubro", "Novembro", "Dezembro",
 ]
 
+COL_NOME = 210
+COL_MES  = 80
+
 
 class TelaRelatorio(ctk.CTkFrame):
     def __init__(self, master, navegar):
@@ -149,32 +152,35 @@ class TelaRelatorio(ctk.CTkFrame):
             self._mostrar_placeholder()
             return
 
+        # ── Cabeçalho ────────────────────────────────────────
         header_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
         header_frame.pack(fill="x", pady=(0, 2))
-        header_frame.columnconfigure(0, weight=3)
-        for i in range(12):
-            header_frame.columnconfigure(i + 1, weight=1)
 
         ctk.CTkLabel(
             header_frame,
             text="VEÍCULO",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="#FFFFFF",
-        ).grid(row=0, column=0, padx=8, pady=6, sticky="w")
+            width=COL_NOME,
+            anchor="w",
+        ).pack(side="left", padx=(8, 0), pady=6)
 
-        for i, mes in enumerate(MESES):
+        for mes in MESES:
             ctk.CTkLabel(
                 header_frame,
                 text=mes[:3].upper(),
                 font=ctk.CTkFont(size=11, weight="bold"),
                 text_color="#FFFFFF",
-            ).grid(row=0, column=i + 1, padx=4, pady=6)
+                width=COL_MES,
+                anchor="center",
+            ).pack(side="left", pady=6)
 
+        # ── Linhas ───────────────────────────────────────────
         categoria_atual = None
         for nome, categoria, valores in dados.get("veiculos", []):
             if categoria != categoria_atual:
                 categoria_atual = categoria
-                sep = ctk.CTkFrame(self.frame_tabela, fg_color="#E5E7EB", corner_radius=0, height=2)
+                sep = ctk.CTkFrame(self.frame_tabela, fg_color="#E5E7EB", height=2)
                 sep.pack(fill="x", pady=(8, 2))
                 ctk.CTkLabel(
                     self.frame_tabela,
@@ -185,48 +191,50 @@ class TelaRelatorio(ctk.CTkFrame):
 
             row = ctk.CTkFrame(self.frame_tabela, fg_color="#F9FAFB", corner_radius=4)
             row.pack(fill="x", pady=1)
-            row.columnconfigure(0, weight=3)
-            for i in range(12):
-                row.columnconfigure(i + 1, weight=1)
 
             ctk.CTkLabel(
                 row,
                 text=nome,
-                font=ctk.CTkFont(size=12),
+                font=ctk.CTkFont(size=11),
                 text_color=CORES["texto"],
+                width=COL_NOME,
                 anchor="w",
-            ).grid(row=0, column=0, padx=8, pady=6, sticky="w")
+            ).pack(side="left", padx=(8, 0), pady=5)
 
-            for i, val in enumerate(valores):
+            for val in valores:
                 texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
                 ctk.CTkLabel(
                     row,
                     text=texto,
-                    font=ctk.CTkFont(size=11),
+                    font=ctk.CTkFont(size=10),
                     text_color=CORES["texto"] if val else CORES["texto_sec"],
-                ).grid(row=0, column=i + 1, padx=4, pady=6)
+                    width=COL_MES,
+                    anchor="center",
+                ).pack(side="left", pady=5)
 
+        # ── Total ─────────────────────────────────────────────
         total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#375623", corner_radius=6)
         total_frame.pack(fill="x", pady=(8, 0))
-        total_frame.columnconfigure(0, weight=3)
-        for i in range(12):
-            total_frame.columnconfigure(i + 1, weight=1)
 
         ctk.CTkLabel(
             total_frame,
             text="TOTAL MÊS",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=11, weight="bold"),
             text_color="#FFFFFF",
-        ).grid(row=0, column=0, padx=8, pady=8, sticky="w")
+            width=COL_NOME,
+            anchor="w",
+        ).pack(side="left", padx=(8, 0), pady=7)
 
-        for i, val in enumerate(dados.get("totais_mes", [0] * 12)):
+        for val in dados.get("totais_mes", [0] * 12):
             texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
             ctk.CTkLabel(
                 total_frame,
                 text=texto,
-                font=ctk.CTkFont(size=11, weight="bold"),
+                font=ctk.CTkFont(size=10, weight="bold"),
                 text_color="#FFFFFF",
-            ).grid(row=0, column=i + 1, padx=4, pady=8)
+                width=COL_MES,
+                anchor="center",
+            ).pack(side="left", pady=7)
 
     def _mostrar_status(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]
