@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from datetime import datetime
 from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
+from functions.veiculos import listar_veiculos,adicionar_veiculo,remover_veiculo
 
 CORES = {
     "header":    "#1A1A2E",
@@ -192,10 +193,10 @@ class TelaMain(ctk.CTkFrame):
     # ── Backend — construir junto ─────────────────────────────
 
     def _listar_veiculos(self):
-       from functions.veiculos import listar_veiculos
+
        resultado = listar_veiculos()
        if isinstance(resultado,list):
-            return [nome for nome, categoria in resultado]
+            return [nome for id, nome, categoria in resultado]
             return []
 
     def _contar_lancamentos_mes(self):

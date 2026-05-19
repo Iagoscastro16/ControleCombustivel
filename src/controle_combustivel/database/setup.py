@@ -8,7 +8,8 @@ def criar_tabelas():
                 CREATE TABLE IF NOT EXISTS veiculos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     nome TEXT NOT NULL,
-                    categoria TEXT NOT NULL
+                    categoria TEXT NOT NULL,
+                    ativo INTEGER NOT NULL DEFAULT 1
                     )
             ''')
     except Exception as e:

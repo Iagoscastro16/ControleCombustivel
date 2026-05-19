@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from functions.veiculos import listar_veiculos, adicionar_veiculo, remover_veiculo, ativar_veiculo
 
 CORES = {
     "header":    "#1A1A2E",
@@ -22,10 +23,10 @@ class TelaVeiculos(ctk.CTkToplevel):
         self.title("Veículos Cadastrados")
         self.geometry("620x620")
         self.after(100, self.grab_set)
+        self.mostrar_inativos = ctk.BooleanVar(value=False)
         self._construir()
 
     def _construir(self):
-        # ── Header ───────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color=CORES["header"], corner_radius=0, height=60)
         header.pack(fill="x")
         header.pack_propagate(False)
@@ -48,16 +49,28 @@ class TelaVeiculos(ctk.CTkToplevel):
             command=self.destroy,
         ).pack(side="right", padx=16)
 
-        # ── Lista de veículos ─────────────────────────────────
         card_lista = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_lista.pack(padx=24, pady=(20, 10), fill="both", expand=True)
 
+        # Cabeçalho da lista com toggle
+        frame_topo = ctk.CTkFrame(card_lista, fg_color="transparent")
+        frame_topo.pack(fill="x", padx=16, pady=(16, 8))
+
         ctk.CTkLabel(
-            card_lista,
+            frame_topo,
             text="Veículos",
             font=ctk.CTkFont(size=14, weight="bold"),
             text_color=CORES["texto"],
-        ).pack(anchor="w", padx=16, pady=(16, 8))
+        ).pack(side="left")
+
+        ctk.CTkCheckBox(
+            frame_topo,
+            text="Mostrar inativos",
+            font=ctk.CTkFont(size=12),
+            text_color=CORES["texto_sec"],
+            variable=self.mostrar_inativos,
+            command=self._atualizar_lista,
+        ).pack(side="right")
 
         self.frame_lista = ctk.CTkScrollableFrame(
             card_lista, fg_color="transparent", height=220
@@ -66,7 +79,6 @@ class TelaVeiculos(ctk.CTkToplevel):
 
         self._atualizar_lista()
 
-        # ── Card adicionar ────────────────────────────────────
         card_add = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_add.pack(padx=24, pady=(0, 24), fill="x")
 
@@ -118,8 +130,6 @@ class TelaVeiculos(ctk.CTkToplevel):
             command=self._adicionar,
         ).pack(fill="x", padx=16, pady=(8, 16))
 
-    # ── Helpers de UI ────────────────────────────────────────
-
     def _atualizar_lista(self):
         for widget in self.frame_lista.winfo_children():
             widget.destroy()
@@ -135,15 +145,27 @@ class TelaVeiculos(ctk.CTkToplevel):
             ).pack(pady=24)
             return
 
-        for nome, categoria in veiculos:
-            row = ctk.CTkFrame(self.frame_lista, fg_color="#F9FAFB", corner_radius=8)
+        for registro in veiculos:
+            # quando mostrar inativos vem (id, nome, categoria, ativo)
+            # quando só ativos vem (id, nome, categoria)
+            if len(registro) == 4:
+                id, nome, categoria, ativo = registro
+            else:
+                id, nome, categoria = registro
+                ativo = 1
+
+            row = ctk.CTkFrame(
+                self.frame_lista,
+                fg_color="#F9FAFB" if ativo else "#FEE2E2",
+                corner_radius=8
+            )
             row.pack(fill="x", pady=3)
 
             ctk.CTkLabel(
                 row,
                 text=nome,
                 font=ctk.CTkFont(size=13, weight="bold"),
-                text_color=CORES["texto"],
+                text_color=CORES["texto"] if ativo else CORES["texto_sec"],
             ).pack(side="left", padx=12, pady=10)
 
             ctk.CTkLabel(
@@ -153,27 +175,39 @@ class TelaVeiculos(ctk.CTkToplevel):
                 text_color=CORES["texto_sec"],
             ).pack(side="left", padx=(0, 8))
 
-            ctk.CTkButton(
-                row,
-                text="Remover",
-                width=76,
-                height=30,
-                font=ctk.CTkFont(size=11),
-                fg_color=CORES["perigo"],
-                hover_color="#DC2626",
-                command=lambda n=nome: self._confirmar_remocao(n),
-            ).pack(side="right", padx=8, pady=6)
+            if ativo:
+                ctk.CTkButton(
+                    row,
+                    text="Remover",
+                    width=76,
+                    height=30,
+                    font=ctk.CTkFont(size=11),
+                    fg_color=CORES["perigo"],
+                    hover_color="#DC2626",
+                    command=lambda i=id: self._confirmar_remocao(i),
+                ).pack(side="right", padx=8, pady=6)
+            else:
+                ctk.CTkButton(
+                    row,
+                    text="Ativar",
+                    width=76,
+                    height=30,
+                    font=ctk.CTkFont(size=11),
+                    fg_color=CORES["sucesso"],
+                    hover_color="#059669",
+                    command=lambda i=id: self._ativar(i),
+                ).pack(side="right", padx=8, pady=6)
 
-    def _confirmar_remocao(self, nome):
+    def _confirmar_remocao(self, id):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Confirmar remoção")
         dialog.geometry("340x160")
         dialog.resizable(False, False)
-        dialog.grab_set()
+        dialog.after(100, dialog.grab_set)
 
         ctk.CTkLabel(
             dialog,
-            text=f'Remover "{nome}"?',
+            text="Deseja remover este veículo?",
             font=ctk.CTkFont(size=14, weight="bold"),
             wraplength=280,
         ).pack(pady=(24, 8))
@@ -203,7 +237,7 @@ class TelaVeiculos(ctk.CTkToplevel):
             width=110,
             fg_color=CORES["perigo"],
             hover_color="#DC2626",
-            command=lambda: [dialog.destroy(), self._remover(nome)],
+            command=lambda: [dialog.destroy(), self._remover(id)],
         ).pack(side="left", padx=6)
 
     def _mostrar_feedback(self, msg, sucesso=True):
@@ -211,25 +245,41 @@ class TelaVeiculos(ctk.CTkToplevel):
         self.lbl_feedback.configure(text=msg, text_color=cor)
         self.after(2000, lambda: self.lbl_feedback.configure(text=""))
 
-    # ── Backend — construir junto ─────────────────────────────
-
     def _listar_veiculos(self):
-        # TODO: SELECT nome, categoria FROM veiculos ORDER BY categoria, nome
+        resultado = listar_veiculos(mostrar_inativos=self.mostrar_inativos.get())
+        if isinstance(resultado, list):
+            return resultado
         return []
 
     def _adicionar(self):
         nome = self.entry_nome.get().strip()
         categoria = self.combo_categoria.get()
 
-        # TODO: validar campos não vazios e categoria selecionada
-        # TODO: INSERT INTO veiculos (nome, categoria) VALUES (?, ?)
-        # TODO: self._atualizar_lista()
-        # TODO: self._mostrar_feedback("Veículo adicionado!")
-        # TODO: limpar campos
-        pass
+        if not nome or categoria == "Categoria":
+            self._mostrar_feedback("Preencha todos os campos!", sucesso=False)
+            return
 
-    def _remover(self, nome):
-        # TODO: DELETE FROM veiculos WHERE nome = ?
-        # TODO: self._atualizar_lista()
-        # TODO: self._mostrar_feedback("Veículo removido!")
-        pass
+        resultado = adicionar_veiculo(nome, categoria)
+        if resultado["success"]:
+            self._mostrar_feedback("Veículo adicionado!")
+            self._atualizar_lista()
+            self.entry_nome.delete(0, "end")
+            self.combo_categoria.set("Categoria")
+        else:
+            self._mostrar_feedback(resultado["message"], sucesso=False)
+
+    def _remover(self, id):
+        resultado = remover_veiculo(id)
+        if resultado["success"]:
+            self._mostrar_feedback("Veículo removido!")
+            self._atualizar_lista()
+        else:
+            self._mostrar_feedback(resultado["message"], sucesso=False)
+
+    def _ativar(self, id):
+        resultado = ativar_veiculo(id)
+        if resultado["success"]:
+            self._mostrar_feedback("Veículo reativado!")
+            self._atualizar_lista()
+        else:
+            self._mostrar_feedback(resultado["message"], sucesso=False)
