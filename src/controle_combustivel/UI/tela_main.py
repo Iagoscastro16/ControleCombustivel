@@ -190,8 +190,11 @@ class TelaMain(ctk.CTkFrame):
     # ── Backend — construir junto ─────────────────────────────
 
     def _listar_veiculos(self):
-        # TODO: buscar nomes da tabela veiculos no banco
-        return []
+       from functions.veiculos import listar_veiculos
+       resultado = listar_veiculos()
+       if isinstance(resultado,list):
+            return [nome for nome, categoria in resultado]
+            return []
 
     def _contar_lancamentos_mes(self):
         # TODO: SELECT COUNT(*) WHERE mes/ano = atual

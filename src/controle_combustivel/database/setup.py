@@ -1,12 +1,5 @@
-from pathlib import Path
-import sqlite3
-from database.connection import  DB_PATH
+from database.connection import  get_connection
 
-
-def get_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn 
 
 def criar_tabelas():
     try:
@@ -42,9 +35,11 @@ def criar_tabelas():
 def popular_dados_iniciais():
     try:
         import importlib
-        seed = importlib.import_module("seed")
+        seed = importlib.import_module("database.seed")
         with get_connection() as conn:
-            seed.popular(conn)
+            cursor = conn.execute("SELECT COUNT(*) FROM veiculos")
+            if cursor.fetchone()[0] == 0:
+                seed.popular(conn)
     except ModuleNotFoundError:
         pass
     
