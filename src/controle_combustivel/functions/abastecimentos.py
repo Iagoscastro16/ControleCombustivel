@@ -1,4 +1,5 @@
 from database. connection import get_connection
+from datetime import datetime
 
 def inserir_abastecimento(data,veiculo_nome, valor):
     try:
@@ -18,3 +19,23 @@ def inserir_abastecimento(data,veiculo_nome, valor):
         
     return {"success": True,
             "message": "Registro criado com sucesso"}
+    
+    
+    
+    
+def contar_lancamentos_mes():
+    try:
+        with get_connection() as conn:
+            ano_mes = datetime.now().strftime("%Y-%m")
+            
+        cursor = conn.execute(
+            "SELECT COUNT(*) FROM abastecimentos WHERE data LIKE ?",
+            (f"{ano_mes}%",)
+        )
+        
+        return cursor.fetchone()[0]
+    
+    except Exception as e:
+        return {"success": False,
+                "message": f"erro ao listar lançamentos do mes: {e}"
+                }

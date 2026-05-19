@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
-from functions.abastecimentos import inserir_abastecimento
+from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
 
 CORES = {
     "header":    "#1A1A2E",
@@ -199,7 +199,9 @@ class TelaMain(ctk.CTkFrame):
             return []
 
     def _contar_lancamentos_mes(self):
-        # TODO: SELECT COUNT(*) WHERE mes/ano = atual
+        resultado = contar_lancamentos_mes()
+        if isinstance(resultado,int):
+            return resultado
         return 0
 
     def _lancar(self):
