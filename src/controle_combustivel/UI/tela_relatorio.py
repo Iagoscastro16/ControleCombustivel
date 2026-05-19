@@ -1,8 +1,10 @@
 import os
+import tempfile
+import platform
 import customtkinter as ctk
 from datetime import datetime
 from tkinter import filedialog
-from functions.relatorio import gerar_relatorio
+from functions.relatorio import gerar_relatorio, exportar_excel
 
 CORES = {
     "header":    "#1A1A2E",
@@ -24,14 +26,10 @@ MESES = [
 ]
 
 
-class TelaRelatorio(ctk.CTkToplevel):
-    def __init__(self, master):
-        super().__init__(master)
-        self.title("Relatório de Combustível")
-        self.geometry("960x720")
-        self.resizable(True, True)
-        self.after(100, self.grab_set)
-        self._ultimo_excel = None
+class TelaRelatorio(ctk.CTkFrame):
+    def __init__(self, master, navegar):
+        super().__init__(master, fg_color=CORES["fundo"])
+        self.navegar = navegar
         self._construir()
 
     def _construir(self):
@@ -54,7 +52,7 @@ class TelaRelatorio(ctk.CTkToplevel):
             fg_color="transparent",
             hover_color="#2D2D4E",
             font=ctk.CTkFont(size=13),
-            command=self.destroy,
+            command=lambda: self.navegar("main"),
         ).pack(side="right", padx=16)
 
         card_ctrl = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
@@ -129,22 +127,8 @@ class TelaRelatorio(ctk.CTkToplevel):
             card_tabela, fg_color="transparent"
         )
         self.frame_tabela.pack(fill="both", expand=True, padx=16, pady=16)
-        self.frame_tabela.bind_all("<Button-4>", self._scroll_up)
-        self.frame_tabela.bind_all("<Button-5>", self._scroll_down)
 
         self._mostrar_placeholder()
-
-    def _scroll_up(self, event):
-        try:
-            self.frame_tabela._parent_canvas.yview_scroll(-1, "units")
-        except Exception:
-            pass
-
-    def _scroll_down(self, event):
-        try:
-            self.frame_tabela._parent_canvas.yview_scroll(1, "units")
-        except Exception:
-            pass
 
     def _mostrar_placeholder(self):
         for widget in self.frame_tabela.winfo_children():
@@ -316,9 +300,7 @@ class TelaRelatorio(ctk.CTkToplevel):
             return
 
         try:
-            from functions.relatorio import exportar_excel
             exportar_excel(self._ultimo_dados, ano, caminho)
-            self._ultimo_excel = caminho
             self._mostrar_status("Excel exportado com sucesso!")
         except Exception as e:
             self._mostrar_status(f"Erro ao exportar: {e}", sucesso=False)
@@ -329,21 +311,19 @@ class TelaRelatorio(ctk.CTkToplevel):
             return
 
         try:
-            import tempfile
-            import platform
-            from functions.relatorio import exportar_excel
-
-            # cria arquivo temporário
-            with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
-                caminho_tmp = tmp.name
-
-            exportar_excel(self._ultimo_dados, self.combo_ano.get(), caminho_tmp)
+            caminho_xlsx = os.path.join(os.environ.get("TEMP", "/tmp"), "combustivel_temp.xlsx")
+            exportar_excel(self._ultimo_dados, self.combo_ano.get(), caminho_xlsx)
 
             if platform.system() == "Windows":
-                os.startfile(caminho_tmp, "print")
+                import win32com.client
+                excel = win32com.client.Dispatch("Excel.Application")
+                excel.Visible = True
+                wb = excel.Workbooks.Open(caminho_xlsx)
+                wb.PrintPreview()
             else:
                 import subprocess
-                subprocess.Popen(["xdg-open", caminho_tmp])
+                subprocess.Popen(["xdg-open", caminho_xlsx])
+                self._mostrar_status("Arquivo aberto! Use Ctrl+P para imprimir.")
 
         except Exception as e:
             self._mostrar_status(f"Erro ao imprimir: {e}", sucesso=False)

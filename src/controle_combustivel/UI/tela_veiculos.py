@@ -17,16 +17,15 @@ CORES = {
 CATEGORIAS = ["Utilitários", "Passeio", "Outros", "Diretoria"]
 
 
-class TelaVeiculos(ctk.CTkToplevel):
-    def __init__(self, master):
-        super().__init__(master)
-        self.title("Veículos Cadastrados")
-        self.geometry("620x620")
-        self.after(100, self.grab_set)
+class TelaVeiculos(ctk.CTkFrame):
+    def __init__(self, master, navegar):
+        super().__init__(master, fg_color=CORES["fundo"])
+        self.navegar = navegar
         self.mostrar_inativos = ctk.BooleanVar(value=False)
         self._construir()
 
     def _construir(self):
+        # ── Header ───────────────────────────────────────────
         header = ctk.CTkFrame(self, fg_color=CORES["header"], corner_radius=0, height=60)
         header.pack(fill="x")
         header.pack_propagate(False)
@@ -46,9 +45,10 @@ class TelaVeiculos(ctk.CTkToplevel):
             fg_color="transparent",
             hover_color="#2D2D4E",
             font=ctk.CTkFont(size=13),
-            command=self.destroy,
+            command=lambda: self.navegar("main"),
         ).pack(side="right", padx=16)
 
+        # ── Lista de veículos ─────────────────────────────────
         card_lista = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_lista.pack(padx=24, pady=(20, 10), fill="both", expand=True)
 
@@ -75,11 +75,10 @@ class TelaVeiculos(ctk.CTkToplevel):
             card_lista, fg_color="transparent", height=220
         )
         self.frame_lista.pack(fill="both", expand=True, padx=16, pady=(0, 16))
-        self.frame_lista.bind_all("<Button-4>", self._scroll_up)
-        self.frame_lista.bind_all("<Button-5>", self._scroll_down)
 
         self._atualizar_lista()
 
+        # ── Card adicionar ────────────────────────────────────
         card_add = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_add.pack(padx=24, pady=(0, 24), fill="x")
 
@@ -130,18 +129,6 @@ class TelaVeiculos(ctk.CTkToplevel):
             hover_color="#059669",
             command=self._adicionar,
         ).pack(fill="x", padx=16, pady=(8, 16))
-
-    def _scroll_up(self, event):
-        try:
-            self.frame_lista._parent_canvas.yview_scroll(-1, "units")
-        except Exception:
-            pass
-
-    def _scroll_down(self, event):
-        try:
-            self.frame_lista._parent_canvas.yview_scroll(1, "units")
-        except Exception:
-            pass
 
     def _atualizar_lista(self):
         for widget in self.frame_lista.winfo_children():
@@ -212,9 +199,14 @@ class TelaVeiculos(ctk.CTkToplevel):
     def _confirmar_remocao(self, id):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Confirmar remoção")
-        dialog.geometry("340x160")
         dialog.resizable(False, False)
-        dialog.after(100, dialog.grab_set)
+
+        dialog.update_idletasks()
+        w, h = 340, 160
+        x = (dialog.winfo_screenwidth() // 2) - (w // 2)
+        y = (dialog.winfo_screenheight() // 2) - (h // 2)
+        dialog.geometry(f"{w}x{h}+{x}+{y}")
+        dialog.after(100, lambda: [dialog.grab_set(), dialog.lift(), dialog.focus_force()])
 
         ctk.CTkLabel(
             dialog,

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from datetime import datetime
+from functions.veiculos import listar_veiculos
 from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
-from functions.veiculos import listar_veiculos,adicionar_veiculo,remover_veiculo
 
 CORES = {
     "header":    "#1A1A2E",
@@ -19,9 +19,9 @@ CORES = {
 
 
 class TelaMain(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, navegar):
         super().__init__(master, fg_color=CORES["fundo"])
-        self.master = master
+        self.navegar = navegar
         self._construir()
 
     def _construir(self):
@@ -117,7 +117,7 @@ class TelaMain(ctk.CTkFrame):
         )
         self.entry_valor.pack(fill="x", pady=(4, 0))
 
-        # Label de feedback inline (não modal)
+        # Label de feedback inline
         self.lbl_feedback = ctk.CTkLabel(
             card,
             text="",
@@ -149,7 +149,7 @@ class TelaMain(ctk.CTkFrame):
             font=ctk.CTkFont(size=13),
             fg_color="#374151",
             hover_color="#4B5563",
-            command=self._abrir_veiculos,
+            command=lambda: self.navegar("veiculos"),
         ).grid(row=0, column=0, padx=(0, 6), sticky="ew")
 
         ctk.CTkButton(
@@ -159,13 +159,10 @@ class TelaMain(ctk.CTkFrame):
             font=ctk.CTkFont(size=13),
             fg_color="#374151",
             hover_color="#4B5563",
-            command=self._abrir_relatorio,
+            command=lambda: self.navegar("relatorio"),
         ).grid(row=0, column=1, padx=(6, 0), sticky="ew")
 
-        # Atualiza contador ao abrir
         self._atualizar_contador()
-
-    # ── Helpers de UI ────────────────────────────────────────
 
     def _mostrar_feedback(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]
@@ -182,50 +179,38 @@ class TelaMain(ctk.CTkFrame):
         qtd = self._contar_lancamentos_mes()
         self.lbl_contador.configure(text=f"{qtd} lançamentos este mês")
 
-    def _abrir_veiculos(self):
-        from UI.tela_veiculos import TelaVeiculos
-        TelaVeiculos(self.master)
-
-    def _abrir_relatorio(self):
-        from UI.tela_relatorio import TelaRelatorio
-        TelaRelatorio(self.master)
-
-    # ── Backend — construir junto ─────────────────────────────
-
     def _listar_veiculos(self):
-
-       resultado = listar_veiculos()
-       if isinstance(resultado,list):
+        resultado = listar_veiculos()
+        if isinstance(resultado, list):
             return [nome for id, nome, categoria in resultado]
-            return []
+        return []
 
     def _contar_lancamentos_mes(self):
         resultado = contar_lancamentos_mes()
-        if isinstance(resultado,int):
+        if isinstance(resultado, int):
             return resultado
         return 0
 
     def _lancar(self):
-        data   = self.entry_data.get().strip()
+        data = self.entry_data.get().strip()
         veiculo = self.combo_veiculo.get()
-        valor  = self.entry_valor.get().strip()
-        
-        if not data or not valor or veiculo == "Selecione o veiculo...":
+        valor = self.entry_valor.get().strip()
+
+        if not data or not valor or veiculo == "Selecione o veículo...":
             self._mostrar_feedback("Preencha todos os campos!", sucesso=False)
             return
+
         try:
             data_banco = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
-        
         except ValueError:
-            self._mostrar_feedback("Data Inválida! Use DD/MM/AAAA", sucesso=False)
+            self._mostrar_feedback("Data inválida! Use DD/MM/AAAA", sucesso=False)
             return
-        
-        valor_float = float(valor.replace(",","."))
-        
-        resultado = inserir_abastecimento(data_banco,veiculo,valor_float)
-        
+
+        valor_float = float(valor.replace(",", "."))
+        resultado = inserir_abastecimento(data_banco, veiculo, valor_float)
+
         if resultado["success"]:
-            self._mostrar_feedback("Lançamento Registrado!")
+            self._mostrar_feedback("Lançamento registrado!")
             self._limpar_campos()
             self._atualizar_contador()
         else:
