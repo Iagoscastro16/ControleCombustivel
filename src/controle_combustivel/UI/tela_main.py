@@ -1,4 +1,6 @@
 import customtkinter as ctk
+from datetime import datetime
+from functions.abastecimentos import inserir_abastecimento
 
 CORES = {
     "header":    "#1A1A2E",
@@ -204,10 +206,24 @@ class TelaMain(ctk.CTkFrame):
         data   = self.entry_data.get().strip()
         veiculo = self.combo_veiculo.get()
         valor  = self.entry_valor.get().strip()
-
-        # TODO: validar campos (data, veículo selecionado, valor numérico > 0)
-        # TODO: inserir no banco
-        # TODO: self._mostrar_feedback("Lançamento registrado!")
-        # TODO: self._limpar_campos()
-        # TODO: self._atualizar_contador()
-        pass
+        
+        if not data or not valor or veiculo == "Selecione o veiculo...":
+            self._mostrar_feedback("Preencha todos os campos!", sucesso=False)
+            return
+        try:
+            data_banco = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
+        
+        except ValueError:
+            self._mostrar_feedback("Data Inválida! Use DD/MM/AAAA", sucesso=False)
+            return
+        
+        valor_float = float(valor.replace(",","."))
+        
+        resultado = inserir_abastecimento(data_banco,veiculo,valor_float)
+        
+        if resultado["success"]:
+            self._mostrar_feedback("Lançamento Registrado!")
+            self._limpar_campos()
+            self._atualizar_contador()
+        else:
+            self._mostrar_feedback(resultado["message"], sucesso=False)
