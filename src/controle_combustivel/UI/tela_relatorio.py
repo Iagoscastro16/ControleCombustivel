@@ -41,13 +41,6 @@ class TelaRelatorio(ctk.CTkFrame):
         header.pack(fill="x")
         header.pack_propagate(False)
 
-        ctk.CTkLabel(
-            header,
-            text="Relatório de Combustível",
-            font=ctk.CTkFont(size=18, weight="bold"),
-            text_color="#FFFFFF",
-        ).pack(side="left", padx=24, pady=16)
-
         ctk.CTkButton(
             header,
             text="← Voltar",
@@ -57,7 +50,14 @@ class TelaRelatorio(ctk.CTkFrame):
             hover_color="#2D2D4E",
             font=ctk.CTkFont(size=13),
             command=lambda: self.navegar("main"),
-        ).pack(side="right", padx=16)
+        ).pack(side="left", padx=16)
+
+        ctk.CTkLabel(
+            header,
+            text="Relatório de Combustível",
+            font=ctk.CTkFont(size=18, weight="bold"),
+            text_color="#FFFFFF",
+        ).pack(expand=True)
 
         card_ctrl = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
         card_ctrl.pack(padx=24, pady=(20, 10), fill="x")

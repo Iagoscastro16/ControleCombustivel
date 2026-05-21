@@ -30,23 +30,23 @@ class TelaVeiculos(ctk.CTkFrame):
         header.pack(fill="x")
         header.pack_propagate(False)
 
-        ctk.CTkLabel(
-            header,
-            text="Veículos Cadastrados",
-            font=ctk.CTkFont(size=18, weight="bold"),
-            text_color="#FFFFFF",
-        ).pack(side="left", padx=24, pady=16)
-
         ctk.CTkButton(
             header,
-            text="← Voltar",
+            text="Voltar →",
             width=90,
             height=32,
             fg_color="transparent",
             hover_color="#2D2D4E",
             font=ctk.CTkFont(size=13),
             command=lambda: self.navegar("main"),
-        ).pack(side="right", padx=16)
+        ).pack(side="right", padx=16, pady=14)
+
+        ctk.CTkLabel(
+            header,
+            text="Veículos Cadastrados",
+            font=ctk.CTkFont(size=18, weight="bold"),
+            text_color="#FFFFFF",
+        ).pack(expand=True)
 
         # ── Lista de veículos ─────────────────────────────────
         card_lista = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)

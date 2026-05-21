@@ -35,7 +35,7 @@ class TelaMain(ctk.CTkFrame):
             text="Controle de Combustível",
             font=ctk.CTkFont(size=22, weight="bold"),
             text_color="#FFFFFF",
-        ).pack(side="left", padx=24, pady=18)
+        ).pack(expand=True)
 
         self.lbl_contador = ctk.CTkLabel(
             header,
