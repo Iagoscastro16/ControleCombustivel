@@ -83,7 +83,7 @@ class TelaRelatorio(ctk.CTkFrame):
         self.combo_ano.pack(side="left", padx=(0, 14))
         self.combo_ano.set(str(datetime.now().year))
 
-        ctk.CTkButton(
+        self.btn_gerar = ctk.CTkButton(
             frame_ctrl,
             text="GERAR",
             width=100,
@@ -92,9 +92,10 @@ class TelaRelatorio(ctk.CTkFrame):
             fg_color=CORES["primario"],
             hover_color=CORES["hover"],
             command=self._gerar,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self.btn_gerar.pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.btn_excel = ctk.CTkButton(
             frame_ctrl,
             text="EXPORTAR EXCEL",
             width=160,
@@ -103,9 +104,10 @@ class TelaRelatorio(ctk.CTkFrame):
             fg_color=CORES["sucesso"],
             hover_color="#059669",
             command=self._exportar_excel,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self.btn_excel.pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.btn_imprimir = ctk.CTkButton(
             frame_ctrl,
             text="IMPRIMIR",
             width=110,
@@ -114,9 +116,10 @@ class TelaRelatorio(ctk.CTkFrame):
             fg_color="#374151",
             hover_color="#4B5563",
             command=self._imprimir,
-        ).pack(side="left", padx=(0, 16))
+        )
+        self.btn_imprimir.pack(side="left", padx=(0, 16))
 
-        ctk.CTkButton(
+        self.btn_historico = ctk.CTkButton(
             frame_ctrl,
             text="HISTÓRICO",
             width=110,
@@ -125,7 +128,8 @@ class TelaRelatorio(ctk.CTkFrame):
             fg_color="#374151",
             hover_color="#4B5563",
             command=lambda: self.navegar("historico"),
-        ).pack(side="left", padx=(0, 16))
+        )
+        self.btn_historico.pack(side="left", padx=(0, 16))
 
         ctk.CTkCheckBox(
             frame_ctrl,
@@ -134,6 +138,31 @@ class TelaRelatorio(ctk.CTkFrame):
             text_color=CORES["texto_sec"],
             variable=self.mostrar_inativos,
         ).pack(side="left")
+
+        # ── Navegação por teclado ─────────────────────────────
+        # Tab: ANO → GERAR → EXPORTAR → IMPRIMIR → HISTÓRICO → ANO
+        self.combo_ano.bind("<Tab>", lambda e: (self.btn_gerar.focus_set(), "break"))
+        self.combo_ano.bind("<Down>", lambda e: self.combo_ano._open_dropdown_menu())
+
+        self.btn_gerar.bind("<Tab>", lambda e: (self.btn_excel.focus_set(), "break"))
+        self.btn_gerar.bind("<Return>", lambda e: self._gerar())
+        self.btn_gerar.bind("<FocusIn>", lambda e: self.btn_gerar.configure(fg_color=CORES["hover"]))
+        self.btn_gerar.bind("<FocusOut>", lambda e: self.btn_gerar.configure(fg_color=CORES["primario"]))
+
+        self.btn_excel.bind("<Tab>", lambda e: (self.btn_imprimir.focus_set(), "break"))
+        self.btn_excel.bind("<Return>", lambda e: self._exportar_excel())
+        self.btn_excel.bind("<FocusIn>", lambda e: self.btn_excel.configure(fg_color="#059669"))
+        self.btn_excel.bind("<FocusOut>", lambda e: self.btn_excel.configure(fg_color=CORES["sucesso"]))
+
+        self.btn_imprimir.bind("<Tab>", lambda e: (self.btn_historico.focus_set(), "break"))
+        self.btn_imprimir.bind("<Return>", lambda e: self._imprimir())
+        self.btn_imprimir.bind("<FocusIn>", lambda e: self.btn_imprimir.configure(fg_color="#4B5563"))
+        self.btn_imprimir.bind("<FocusOut>", lambda e: self.btn_imprimir.configure(fg_color="#374151"))
+
+        self.btn_historico.bind("<Tab>", lambda e: (self.combo_ano.focus_set(), "break"))
+        self.btn_historico.bind("<Return>", lambda e: self.navegar("historico"))
+        self.btn_historico.bind("<FocusIn>", lambda e: self.btn_historico.configure(fg_color="#4B5563"))
+        self.btn_historico.bind("<FocusOut>", lambda e: self.btn_historico.configure(fg_color="#374151"))
 
         self.lbl_status = ctk.CTkLabel(
             card_ctrl,

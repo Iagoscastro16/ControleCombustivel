@@ -96,7 +96,7 @@ class TelaHistorico(ctk.CTkFrame):
         self.combo_ano.pack(side="left", padx=(0, 14))
         self.combo_ano.set(str(datetime.now().year))
 
-        ctk.CTkButton(
+        self.btn_buscar = ctk.CTkButton(
             frame_filtros,
             text="BUSCAR",
             width=100,
@@ -105,7 +105,21 @@ class TelaHistorico(ctk.CTkFrame):
             fg_color=CORES["primario"],
             hover_color=CORES["hover"],
             command=self._buscar,
-        ).pack(side="left")
+        )
+        self.btn_buscar.pack(side="left")
+
+        # ── Navegação por teclado ─────────────────────────────
+        # Tab: MÊS → ANO → BUSCAR → MÊS
+        self.combo_mes.bind("<Tab>", lambda e: (self.combo_ano.focus_set(), "break"))
+        self.combo_mes.bind("<Down>", lambda e: self.combo_mes._open_dropdown_menu())
+
+        self.combo_ano.bind("<Tab>", lambda e: (self.btn_buscar.focus_set(), "break"))
+        self.combo_ano.bind("<Down>", lambda e: self.combo_ano._open_dropdown_menu())
+
+        self.btn_buscar.bind("<Tab>", lambda e: (self.combo_mes.focus_set(), "break"))
+        self.btn_buscar.bind("<Return>", lambda e: self._buscar())
+        self.btn_buscar.bind("<FocusIn>", lambda e: self.btn_buscar.configure(fg_color=CORES["hover"]))
+        self.btn_buscar.bind("<FocusOut>", lambda e: self.btn_buscar.configure(fg_color=CORES["primario"]))
 
         self.lbl_status = ctk.CTkLabel(
             card_filtros,
@@ -347,7 +361,7 @@ class TelaHistorico(ctk.CTkFrame):
             else:
                 lbl_erro.configure(text=resultado["message"])
 
-        ctk.CTkButton(
+        btn_salvar = ctk.CTkButton(
             dialog,
             text="SALVAR",
             height=40,
@@ -355,7 +369,26 @@ class TelaHistorico(ctk.CTkFrame):
             fg_color=CORES["sucesso"],
             hover_color="#059669",
             command=salvar,
-        ).pack(fill="x", padx=24, pady=(4, 0))
+        )
+        btn_salvar.pack(fill="x", padx=24, pady=(4, 0))
+
+        # ── Navegação por teclado ─────────────────────────────
+        # Tab: DATA → VEÍCULO → VALOR → SALVAR → DATA
+        entry_data.bind("<Tab>", lambda e: (combo_veiculo.focus_set(), "break"))
+        entry_data.bind("<Return>", lambda e: combo_veiculo.focus_set())
+
+        combo_veiculo.bind("<Tab>", lambda e: (entry_valor.focus_set(), "break"))
+        combo_veiculo.bind("<Down>", lambda e: combo_veiculo._open_dropdown_menu())
+
+        entry_valor.bind("<Tab>", lambda e: (btn_salvar.focus_set(), "break"))
+        entry_valor.bind("<Return>", lambda e: salvar())
+
+        btn_salvar.bind("<Tab>", lambda e: (entry_data.focus_set(), "break"))
+        btn_salvar.bind("<Return>", lambda e: salvar())
+        btn_salvar.bind("<FocusIn>", lambda e: btn_salvar.configure(fg_color="#059669"))
+        btn_salvar.bind("<FocusOut>", lambda e: btn_salvar.configure(fg_color=CORES["sucesso"]))
+
+        entry_data.focus()
 
     def _listar_veiculos(self):
         resultado = listar_veiculos()

@@ -127,7 +127,7 @@ class TelaMain(ctk.CTkFrame):
         self.lbl_feedback.pack(pady=(0, 6))
 
         # Botão LANÇAR
-        ctk.CTkButton(
+        self.btn_lancar = ctk.CTkButton(
             card,
             text="LANÇAR",
             height=50,
@@ -135,14 +135,15 @@ class TelaMain(ctk.CTkFrame):
             fg_color=CORES["primario"],
             hover_color=CORES["hover"],
             command=self._lancar,
-        ).pack(fill="x", padx=40, pady=(0, 14))
+        )
+        self.btn_lancar.pack(fill="x", padx=40, pady=(0, 14))
 
         # Botões secundários
         frame_btns = ctk.CTkFrame(card, fg_color="transparent")
         frame_btns.pack(fill="x", padx=40, pady=(0, 28))
         frame_btns.columnconfigure((0, 1), weight=1)
 
-        ctk.CTkButton(
+        self.btn_veiculos = ctk.CTkButton(
             frame_btns,
             text="VEÍCULOS",
             height=42,
@@ -150,9 +151,10 @@ class TelaMain(ctk.CTkFrame):
             fg_color="#374151",
             hover_color="#4B5563",
             command=lambda: self.navegar("veiculos"),
-        ).grid(row=0, column=0, padx=(0, 6), sticky="ew")
+        )
+        self.btn_veiculos.grid(row=0, column=0, padx=(0, 6), sticky="ew")
 
-        ctk.CTkButton(
+        self.btn_relatorio = ctk.CTkButton(
             frame_btns,
             text="RELATÓRIO",
             height=42,
@@ -160,14 +162,42 @@ class TelaMain(ctk.CTkFrame):
             fg_color="#374151",
             hover_color="#4B5563",
             command=lambda: self.navegar("relatorio"),
-        ).grid(row=0, column=1, padx=(6, 0), sticky="ew")
+        )
+        self.btn_relatorio.grid(row=0, column=1, padx=(6, 0), sticky="ew")
 
         self._atualizar_contador()
+
+        # ── Navegação por teclado ─────────────────────────────
+        # Tab: data → veículo → valor → LANÇAR → VEÍCULOS → RELATÓRIO → data
+        self.entry_data.bind("<Tab>", lambda e: (self.combo_veiculo.focus_set(), "break"))
+        self.entry_data.bind("<Return>", lambda e: self.combo_veiculo.focus_set())
+
+        self.combo_veiculo.bind("<Tab>", lambda e: (self.entry_valor.focus_set(), "break"))
+        self.combo_veiculo.bind("<Down>", lambda e: self.combo_veiculo._open_dropdown_menu())
+
+        self.entry_valor.bind("<Tab>", lambda e: (self.btn_lancar.focus_set(), "break"))
+        self.entry_valor.bind("<Return>", lambda e: self._lancar())
+
+        self.btn_lancar.bind("<Tab>", lambda e: (self.btn_veiculos.focus_set(), "break"))
+        self.btn_lancar.bind("<Return>", lambda e: self._lancar())
+        self.btn_lancar.bind("<FocusIn>", lambda e: self.btn_lancar.configure(fg_color=CORES["hover"]))
+        self.btn_lancar.bind("<FocusOut>", lambda e: self.btn_lancar.configure(fg_color=CORES["primario"]))
+
+        self.btn_veiculos.bind("<Tab>", lambda e: (self.btn_relatorio.focus_set(), "break"))
+        self.btn_veiculos.bind("<Return>", lambda e: self.navegar("veiculos"))
+        self.btn_veiculos.bind("<FocusIn>", lambda e: self.btn_veiculos.configure(fg_color="#4B5563"))
+        self.btn_veiculos.bind("<FocusOut>", lambda e: self.btn_veiculos.configure(fg_color="#374151"))
+
+        self.btn_relatorio.bind("<Tab>", lambda e: (self.entry_data.focus_set(), "break"))
+        self.btn_relatorio.bind("<Return>", lambda e: self.navegar("relatorio"))
+        self.btn_relatorio.bind("<FocusIn>", lambda e: self.btn_relatorio.configure(fg_color="#4B5563"))
+        self.btn_relatorio.bind("<FocusOut>", lambda e: self.btn_relatorio.configure(fg_color="#374151"))
 
     def ao_exibir(self):
         self.combo_veiculo.configure(values=self._listar_veiculos())
         self.combo_veiculo.set("Selecione o veículo...")
         self._atualizar_contador()
+        self.entry_data.focus()
 
     def _mostrar_feedback(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]

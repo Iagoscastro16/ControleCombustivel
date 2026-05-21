@@ -120,7 +120,7 @@ class TelaVeiculos(ctk.CTkFrame):
         )
         self.lbl_feedback.pack(pady=(4, 0))
 
-        ctk.CTkButton(
+        self.btn_adicionar = ctk.CTkButton(
             card_add,
             text="ADICIONAR",
             height=42,
@@ -128,7 +128,20 @@ class TelaVeiculos(ctk.CTkFrame):
             fg_color=CORES["sucesso"],
             hover_color="#059669",
             command=self._adicionar,
-        ).pack(fill="x", padx=16, pady=(8, 16))
+        )
+        self.btn_adicionar.pack(fill="x", padx=16, pady=(8, 16))
+
+        # ── Navegação por teclado ─────────────────────────────
+        self.entry_nome.bind("<Tab>", lambda e: (self.combo_categoria.focus_set(), "break"))
+        self.entry_nome.bind("<Return>", lambda e: self.combo_categoria.focus_set())
+
+        self.combo_categoria.bind("<Tab>", lambda e: (self.btn_adicionar.focus_set(), "break"))
+        self.combo_categoria.bind("<Down>", lambda e: self.combo_categoria._open_dropdown_menu())
+
+        self.btn_adicionar.bind("<Tab>", lambda e: (self.entry_nome.focus_set(), "break"))
+        self.btn_adicionar.bind("<Return>", lambda e: self._adicionar())
+        self.btn_adicionar.bind("<FocusIn>", lambda e: self.btn_adicionar.configure(fg_color="#059669"))
+        self.btn_adicionar.bind("<FocusOut>", lambda e: self.btn_adicionar.configure(fg_color=CORES["sucesso"]))
 
     def _atualizar_lista(self):
         for widget in self.frame_lista.winfo_children():
