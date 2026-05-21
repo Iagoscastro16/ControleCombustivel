@@ -45,7 +45,7 @@ class TelaMain(ctk.CTkFrame):
         )
         self.lbl_contador.pack(side="right", padx=24)
 
-        # ── Card central ─────────────────────────────────────
+       
         card = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=16)
         card.pack(padx=60, pady=40, fill="both", expand=True)
 
@@ -56,7 +56,7 @@ class TelaMain(ctk.CTkFrame):
             text_color=CORES["texto"],
         ).pack(pady=(28, 20))
 
-        # Campo DATA
+        
         frame_data = ctk.CTkFrame(card, fg_color="transparent")
         frame_data.pack(fill="x", padx=40, pady=(0, 14))
 
@@ -76,7 +76,7 @@ class TelaMain(ctk.CTkFrame):
         )
         self.entry_data.pack(fill="x", pady=(4, 0))
 
-        # Campo VEÍCULO
+        
         frame_veiculo = ctk.CTkFrame(card, fg_color="transparent")
         frame_veiculo.pack(fill="x", padx=40, pady=(0, 14))
 
@@ -97,7 +97,7 @@ class TelaMain(ctk.CTkFrame):
         self.combo_veiculo.pack(fill="x", pady=(4, 0))
         self.combo_veiculo.set("Selecione o veículo...")
 
-        # Campo VALOR
+       
         frame_valor = ctk.CTkFrame(card, fg_color="transparent")
         frame_valor.pack(fill="x", padx=40, pady=(0, 20))
 
@@ -126,7 +126,7 @@ class TelaMain(ctk.CTkFrame):
         )
         self.lbl_feedback.pack(pady=(0, 6))
 
-        # Botão LANÇAR
+        
         ctk.CTkButton(
             card,
             text="LANÇAR",
@@ -137,7 +137,7 @@ class TelaMain(ctk.CTkFrame):
             command=self._lancar,
         ).pack(fill="x", padx=40, pady=(0, 14))
 
-        # Botões secundários
+        
         frame_btns = ctk.CTkFrame(card, fg_color="transparent")
         frame_btns.pack(fill="x", padx=40, pady=(0, 28))
         frame_btns.columnconfigure((0, 1), weight=1)
@@ -162,6 +162,12 @@ class TelaMain(ctk.CTkFrame):
             command=lambda: self.navegar("relatorio"),
         ).grid(row=0, column=1, padx=(6, 0), sticky="ew")
 
+        self._atualizar_contador()
+
+    def ao_exibir(self):
+        """Chamado pelo app.py toda vez que essa tela é exibida."""
+        self.combo_veiculo.configure(values=self._listar_veiculos())
+        self.combo_veiculo.set("Selecione o veículo...")
         self._atualizar_contador()
 
     def _mostrar_feedback(self, msg, sucesso=True):

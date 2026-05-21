@@ -6,21 +6,35 @@ from openpyxl.worksheet.page import PageMargins
 MESES_ABREV = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"]
 
 
-def gerar_relatorio(ano):
-    try:
-        with get_connection() as conn:
-            cursor = conn.execute('''
-                SELECT v.nome, v.categoria, strftime('%m', a.data) as mes, sum(a.valor)
-                FROM abastecimentos a
-                JOIN veiculos v ON a.veiculo_id = v.id
-                WHERE strftime('%Y', a.data) = ?
-                GROUP BY v.nome, mes
-                ORDER BY categoria, v.nome, mes
-            ''', (ano,))
-            return cursor.fetchall()
-    except Exception as e:
-        return {"success": False,
-                "message": f"Erro ao gerar relatório: {e}"}
+def gerar_relatorio(ano, mostrar_inativo=False):
+        try:
+            if mostrar_inativo == 1:
+
+                with get_connection() as conn:
+                    cursor = conn.execute('''
+                        SELECT v.nome, v.categoria, strftime('%m', a.data) as mes, sum(a.valor)
+                        FROM abastecimentos a
+                        JOIN veiculos v ON a.veiculo_id = v.id
+                        WHERE strftime('%Y', a.data) = ?
+                        GROUP BY v.nome, mes
+                        ORDER BY categoria, v.nome, mes
+                    ''', (ano,))
+                    return cursor.fetchall()
+            else:
+                with get_connection() as conn:
+                    cursor = conn.execute('''
+                        SELECT v.nome, v.categoria, strftime('%m', a.data) as mes, sum(a.valor)
+                        FROM abastecimentos a
+                        JOIN veiculos v ON a.veiculo_id = v.id
+                        WHERE strftime('%Y', a.data) = ?
+                        AND v.ativo = 1
+                        GROUP BY v.nome, mes
+                        ORDER BY categoria, v.nome, mes
+                    ''', (ano,))
+                    return cursor.fetchall()
+        except Exception as e:
+            return {"success": False,
+                    "message": f"Erro ao gerar relatório: {e}"}
 
 
 def exportar_excel(dados, ano, caminho):

@@ -33,6 +33,7 @@ class TelaRelatorio(ctk.CTkFrame):
     def __init__(self, master, navegar):
         super().__init__(master, fg_color=CORES["fundo"])
         self.navegar = navegar
+        self.mostrar_inativos = ctk.BooleanVar(value=False)
         self._construir()
 
     def _construir(self):
@@ -113,6 +114,14 @@ class TelaRelatorio(ctk.CTkFrame):
             fg_color="#374151",
             hover_color="#4B5563",
             command=self._imprimir,
+        ).pack(side="left", padx=(0, 16))
+
+        ctk.CTkCheckBox(
+            frame_ctrl,
+            text="Mostrar inativos",
+            font=ctk.CTkFont(size=12),
+            text_color=CORES["texto_sec"],
+            variable=self.mostrar_inativos,
         ).pack(side="left")
 
         self.lbl_status = ctk.CTkLabel(
@@ -131,6 +140,12 @@ class TelaRelatorio(ctk.CTkFrame):
         )
         self.frame_tabela.pack(fill="both", expand=True, padx=16, pady=16)
 
+        self._mostrar_placeholder()
+
+    def ao_exibir(self):
+        """Chamado pelo app.py toda vez que essa tela é exibida."""
+        if hasattr(self, '_ultimo_dados'):
+            del self._ultimo_dados
         self._mostrar_placeholder()
 
     def _mostrar_placeholder(self):
@@ -255,7 +270,7 @@ class TelaRelatorio(ctk.CTkFrame):
 
     def _gerar(self):
         ano = self.combo_ano.get()
-        dados_crus = gerar_relatorio(ano)
+        dados_crus = gerar_relatorio(ano, self.mostrar_inativos.get())
 
         if isinstance(dados_crus, dict):
             self._mostrar_status(dados_crus["message"], sucesso=False)

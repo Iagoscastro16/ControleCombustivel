@@ -29,6 +29,10 @@ def navegar(nome):
     telas[nome].pack(fill="both", expand=True)
     tela_atual = telas[nome]
 
+    
+    if hasattr(tela_atual, "ao_exibir"):
+        tela_atual.ao_exibir()
+
 telas["main"]      = TelaMain(janela, navegar)
 telas["veiculos"]  = TelaVeiculos(janela, navegar)
 telas["relatorio"] = TelaRelatorio(janela, navegar)
