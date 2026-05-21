@@ -116,6 +116,17 @@ class TelaRelatorio(ctk.CTkFrame):
             command=self._imprimir,
         ).pack(side="left", padx=(0, 16))
 
+        ctk.CTkButton(
+            frame_ctrl,
+            text="HISTÓRICO",
+            width=110,
+            height=42,
+            font=ctk.CTkFont(size=13, weight="bold"),
+            fg_color="#374151",
+            hover_color="#4B5563",
+            command=lambda: self.navegar("historico"),
+        ).pack(side="left", padx=(0, 16))
+
         ctk.CTkCheckBox(
             frame_ctrl,
             text="Mostrar inativos",
