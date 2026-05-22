@@ -19,7 +19,7 @@ CATEGORIAS = ["Utilitários", "Passeio", "Outros", "Diretoria"]
 
 class TelaVeiculos(ctk.CTkFrame):
     def __init__(self, master, navegar):
-        super().__init__(master, fg_color=CORES["fundo"])
+        super().__init__(master)
         self.navegar = navegar
         self.mostrar_inativos = ctk.BooleanVar(value=False)
         self._construir()
@@ -49,7 +49,7 @@ class TelaVeiculos(ctk.CTkFrame):
         ).pack(expand=True)
 
         # ── Lista de veículos ─────────────────────────────────
-        card_lista = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_lista = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_lista.pack(padx=24, pady=(20, 10), fill="both", expand=True)
 
         frame_topo = ctk.CTkFrame(card_lista, fg_color="transparent")
@@ -59,14 +59,14 @@ class TelaVeiculos(ctk.CTkFrame):
             frame_topo,
             text="Veículos",
             font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(side="left")
 
         ctk.CTkCheckBox(
             frame_topo,
             text="Mostrar inativos",
             font=ctk.CTkFont(size=12),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
             variable=self.mostrar_inativos,
             command=self._atualizar_lista,
         ).pack(side="right")
@@ -79,14 +79,14 @@ class TelaVeiculos(ctk.CTkFrame):
         self._atualizar_lista()
 
         # ── Card adicionar ────────────────────────────────────
-        card_add = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_add = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_add.pack(padx=24, pady=(0, 24), fill="x")
 
         ctk.CTkLabel(
             card_add,
             text="Adicionar Veículo",
             font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(anchor="w", padx=16, pady=(16, 8))
 
         frame_inputs = ctk.CTkFrame(card_add, fg_color="transparent")
@@ -154,7 +154,7 @@ class TelaVeiculos(ctk.CTkFrame):
                 self.frame_lista,
                 text="Nenhum veículo cadastrado",
                 font=ctk.CTkFont(size=13),
-                text_color=CORES["texto_sec"],
+                text_color=("gray40", "gray60"),
             ).pack(pady=24)
             return
 
@@ -167,7 +167,7 @@ class TelaVeiculos(ctk.CTkFrame):
 
             row = ctk.CTkFrame(
                 self.frame_lista,
-                fg_color="#F9FAFB" if ativo else "#FEE2E2",
+                fg_color=("gray92", "gray20") if ativo else "#FEE2E2",
                 corner_radius=8
             )
             row.pack(fill="x", pady=3)
@@ -176,14 +176,14 @@ class TelaVeiculos(ctk.CTkFrame):
                 row,
                 text=nome,
                 font=ctk.CTkFont(size=13, weight="bold"),
-                text_color=CORES["texto"] if ativo else CORES["texto_sec"],
+                text_color=("gray10", "gray90") if ativo else CORES["texto_sec"],
             ).pack(side="left", padx=12, pady=10)
 
             ctk.CTkLabel(
                 row,
                 text=categoria,
                 font=ctk.CTkFont(size=12),
-                text_color=CORES["texto_sec"],
+                text_color=("gray40", "gray60"),
             ).pack(side="left", padx=(0, 8))
 
             if ativo:
@@ -232,7 +232,7 @@ class TelaVeiculos(ctk.CTkFrame):
             dialog,
             text="Essa ação não pode ser desfeita.",
             font=ctk.CTkFont(size=12),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack()
 
         frame_btns = ctk.CTkFrame(dialog, fg_color="transparent")

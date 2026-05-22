@@ -31,7 +31,7 @@ COL_MES  = 80
 
 class TelaRelatorio(ctk.CTkFrame):
     def __init__(self, master, navegar):
-        super().__init__(master, fg_color=CORES["fundo"])
+        super().__init__(master)
         self.navegar = navegar
         self.mostrar_inativos = ctk.BooleanVar(value=False)
         self._construir()
@@ -59,7 +59,7 @@ class TelaRelatorio(ctk.CTkFrame):
             text_color="#FFFFFF",
         ).pack(expand=True)
 
-        card_ctrl = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_ctrl = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_ctrl.pack(padx=24, pady=(20, 10), fill="x")
 
         frame_ctrl = ctk.CTkFrame(card_ctrl, fg_color="transparent")
@@ -69,7 +69,7 @@ class TelaRelatorio(ctk.CTkFrame):
             frame_ctrl,
             text="ANO:",
             font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(side="left", padx=(0, 10))
 
         self.combo_ano = ctk.CTkComboBox(
@@ -135,7 +135,7 @@ class TelaRelatorio(ctk.CTkFrame):
             frame_ctrl,
             text="Mostrar inativos",
             font=ctk.CTkFont(size=12),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
             variable=self.mostrar_inativos,
         ).pack(side="left")
 
@@ -172,7 +172,7 @@ class TelaRelatorio(ctk.CTkFrame):
         )
         self.lbl_status.pack(pady=(0, 8))
 
-        card_tabela = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_tabela = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_tabela.pack(padx=24, pady=(0, 24), fill="both", expand=True)
 
         self.frame_tabela = ctk.CTkScrollableFrame(
@@ -196,7 +196,7 @@ class TelaRelatorio(ctk.CTkFrame):
             self.frame_tabela,
             text="Selecione o ano e clique em GERAR",
             font=ctk.CTkFont(size=14),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack(pady=50)
 
     def _renderizar_tabela(self, dados):
@@ -235,23 +235,23 @@ class TelaRelatorio(ctk.CTkFrame):
         for nome, categoria, valores in dados.get("veiculos", []):
             if categoria != categoria_atual:
                 categoria_atual = categoria
-                sep = ctk.CTkFrame(self.frame_tabela, fg_color="#E5E7EB", height=2)
+                sep = ctk.CTkFrame(self.frame_tabela, fg_color=("gray80", "gray30"), height=2)
                 sep.pack(fill="x", pady=(8, 2))
                 ctk.CTkLabel(
                     self.frame_tabela,
                     text=categoria.upper(),
                     font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=CORES["texto_sec"],
+                    text_color=("gray40", "gray60"),
                 ).pack(anchor="w", padx=8, pady=(2, 0))
 
-            row = ctk.CTkFrame(self.frame_tabela, fg_color="#F9FAFB", corner_radius=4)
+            row = ctk.CTkFrame(self.frame_tabela, fg_color=("gray92", "gray20"), corner_radius=4)
             row.pack(fill="x", pady=1)
 
             ctk.CTkLabel(
                 row,
                 text=nome,
                 font=ctk.CTkFont(size=11),
-                text_color=CORES["texto"],
+                text_color=("gray10", "gray90"),
                 width=COL_NOME,
                 anchor="w",
             ).pack(side="left", padx=(8, 0), pady=5)
@@ -262,13 +262,13 @@ class TelaRelatorio(ctk.CTkFrame):
                     row,
                     text=texto,
                     font=ctk.CTkFont(size=10),
-                    text_color=CORES["texto"] if val else CORES["texto_sec"],
+                    text_color=("gray10", "gray90") if val else CORES["texto_sec"],
                     width=COL_MES,
                     anchor="center",
                 ).pack(side="left", pady=5)
 
         # ── Total ─────────────────────────────────────────────
-        total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#375623", corner_radius=6)
+        total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#7C2D12", corner_radius=6)
         total_frame.pack(fill="x", pady=(8, 0))
 
         ctk.CTkLabel(

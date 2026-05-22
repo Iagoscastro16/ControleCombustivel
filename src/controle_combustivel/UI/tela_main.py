@@ -2,25 +2,26 @@ import customtkinter as ctk
 from datetime import datetime
 from functions.veiculos import listar_veiculos
 from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
+from functions.utils import normalizar_data
 
 CORES = {
-    "header":    "#1A1A2E",
-    "primario":  "#4F46E5",
-    "hover":     "#4338CA",
+    "header":    "#1C1917",
+    "primario":  "#F97316",
+    "hover":     "#EA6C0A",
     "sucesso":   "#10B981",
     "perigo":    "#EF4444",
     "texto":     "#1F2937",
     "texto_sec": "#6B7280",
     "borda":     "#D1D5DB",
     "card":      "#FFFFFF",
-    "accent":    "#F59E0B",
+    "accent":    "#FED7AA",
     "fundo":     "#F0F4F8",
 }
 
 
 class TelaMain(ctk.CTkFrame):
     def __init__(self, master, navegar):
-        super().__init__(master, fg_color=CORES["fundo"])
+        super().__init__(master)
         self.navegar = navegar
         self._construir()
 
@@ -46,14 +47,14 @@ class TelaMain(ctk.CTkFrame):
         self.lbl_contador.pack(side="right", padx=24)
 
         # ── Card central ─────────────────────────────────────
-        card = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=16)
+        card = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=16)
         card.pack(padx=60, pady=40, fill="both", expand=True)
 
         ctk.CTkLabel(
             card,
             text="Novo Lançamento",
             font=ctk.CTkFont(size=18, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(pady=(28, 20))
 
         # Campo DATA
@@ -64,7 +65,7 @@ class TelaMain(ctk.CTkFrame):
             frame_data,
             text="DATA",
             font=ctk.CTkFont(size=12, weight="bold"),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack(anchor="w")
 
         self.entry_data = ctk.CTkEntry(
@@ -84,7 +85,7 @@ class TelaMain(ctk.CTkFrame):
             frame_veiculo,
             text="VEÍCULO",
             font=ctk.CTkFont(size=12, weight="bold"),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack(anchor="w")
 
         self.combo_veiculo = ctk.CTkComboBox(
@@ -105,7 +106,7 @@ class TelaMain(ctk.CTkFrame):
             frame_valor,
             text="VALOR (R$)",
             font=ctk.CTkFont(size=12, weight="bold"),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack(anchor="w")
 
         self.entry_valor = ctk.CTkEntry(
@@ -235,10 +236,9 @@ class TelaMain(ctk.CTkFrame):
             self._mostrar_feedback("Preencha todos os campos!", sucesso=False)
             return
 
-        try:
-            data_banco = datetime.strptime(data, "%d/%m/%Y").strftime("%Y-%m-%d")
-        except ValueError:
-            self._mostrar_feedback("Data inválida! Use DD/MM/AAAA", sucesso=False)
+        data_banco = normalizar_data(data)
+        if data_banco is None:
+            self._mostrar_feedback("Data inválida! Use DD/MM/AA", sucesso=False)
             return
 
         valor_float = float(valor.replace(",", "."))

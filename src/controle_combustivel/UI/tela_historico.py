@@ -25,7 +25,7 @@ MESES = [
 
 class TelaHistorico(ctk.CTkFrame):
     def __init__(self, master, navegar):
-        super().__init__(master, fg_color=CORES["fundo"])
+        super().__init__(master)
         self.navegar = navegar
         self._construir()
 
@@ -54,7 +54,7 @@ class TelaHistorico(ctk.CTkFrame):
         ).pack(expand=True)
 
         # ── Filtros ───────────────────────────────────────────
-        card_filtros = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_filtros = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_filtros.pack(padx=24, pady=(20, 10), fill="x")
 
         frame_filtros = ctk.CTkFrame(card_filtros, fg_color="transparent")
@@ -64,7 +64,7 @@ class TelaHistorico(ctk.CTkFrame):
             frame_filtros,
             text="MÊS:",
             font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(side="left", padx=(0, 8))
 
         self.combo_mes = ctk.CTkComboBox(
@@ -82,7 +82,7 @@ class TelaHistorico(ctk.CTkFrame):
             frame_filtros,
             text="ANO:",
             font=ctk.CTkFont(size=14, weight="bold"),
-            text_color=CORES["texto"],
+            text_color=("gray10", "gray90"),
         ).pack(side="left", padx=(0, 8))
 
         self.combo_ano = ctk.CTkComboBox(
@@ -130,7 +130,7 @@ class TelaHistorico(ctk.CTkFrame):
         self.lbl_status.pack(pady=(0, 8))
 
         # ── Tabela ────────────────────────────────────────────
-        card_tabela = ctk.CTkFrame(self, fg_color=CORES["card"], corner_radius=12)
+        card_tabela = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_tabela.pack(padx=24, pady=(0, 24), fill="both", expand=True)
 
         # Cabeçalho fixo da tabela
@@ -165,7 +165,7 @@ class TelaHistorico(ctk.CTkFrame):
             self.frame_lista,
             text="Selecione o mês e ano e clique em BUSCAR",
             font=ctk.CTkFont(size=14),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack(pady=50)
 
     def _buscar(self):
@@ -185,7 +185,7 @@ class TelaHistorico(ctk.CTkFrame):
                 self.frame_lista,
                 text="Nenhum lançamento encontrado",
                 font=ctk.CTkFont(size=13),
-                text_color=CORES["texto_sec"],
+                text_color=("gray40", "gray60"),
             ).pack(pady=40)
             return
 
@@ -193,20 +193,20 @@ class TelaHistorico(ctk.CTkFrame):
             data_fmt = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
             valor_fmt = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-            row = ctk.CTkFrame(self.frame_lista, fg_color="#F9FAFB", corner_radius=4)
+            row = ctk.CTkFrame(self.frame_lista, fg_color=("gray92", "gray20"), corner_radius=4)
             row.pack(fill="x", pady=1)
 
             ctk.CTkLabel(row, text=str(id), width=50, anchor="center",
-                font=ctk.CTkFont(size=11), text_color=CORES["texto_sec"]).pack(side="left", padx=(8,0), pady=8)
+                font=ctk.CTkFont(size=11), text_color=("gray40", "gray60")).pack(side="left", padx=(8,0), pady=8)
 
             ctk.CTkLabel(row, text=data_fmt, width=100, anchor="center",
-                font=ctk.CTkFont(size=11), text_color=CORES["texto"]).pack(side="left", padx=(8,0), pady=8)
+                font=ctk.CTkFont(size=11), text_color=("gray10", "gray90")).pack(side="left", padx=(8,0), pady=8)
 
             ctk.CTkLabel(row, text=nome, width=300, anchor="w",
-                font=ctk.CTkFont(size=11), text_color=CORES["texto"]).pack(side="left", padx=(8,0), pady=8)
+                font=ctk.CTkFont(size=11), text_color=("gray10", "gray90")).pack(side="left", padx=(8,0), pady=8)
 
             ctk.CTkLabel(row, text=valor_fmt, width=120, anchor="center",
-                font=ctk.CTkFont(size=11), text_color=CORES["texto"]).pack(side="left", padx=(8,0), pady=8)
+                font=ctk.CTkFont(size=11), text_color=("gray10", "gray90")).pack(side="left", padx=(8,0), pady=8)
 
             frame_acoes = ctk.CTkFrame(row, fg_color="transparent", width=160)
             frame_acoes.pack(side="left", padx=(8,8), pady=4)
@@ -256,7 +256,7 @@ class TelaHistorico(ctk.CTkFrame):
             dialog,
             text="Essa ação não pode ser desfeita.",
             font=ctk.CTkFont(size=12),
-            text_color=CORES["texto_sec"],
+            text_color=("gray40", "gray60"),
         ).pack()
 
         frame_btns = ctk.CTkFrame(dialog, fg_color="transparent")
@@ -304,7 +304,7 @@ class TelaHistorico(ctk.CTkFrame):
         frame_data = ctk.CTkFrame(dialog, fg_color="transparent")
         frame_data.pack(fill="x", padx=24, pady=(0, 10))
         ctk.CTkLabel(frame_data, text="DATA", font=ctk.CTkFont(size=11, weight="bold"),
-            text_color=CORES["texto_sec"]).pack(anchor="w")
+            text_color=("gray40", "gray60")).pack(anchor="w")
         entry_data = ctk.CTkEntry(frame_data, height=38, font=ctk.CTkFont(size=13))
         entry_data.pack(fill="x", pady=(2, 0))
         entry_data.insert(0, datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y"))
@@ -313,7 +313,7 @@ class TelaHistorico(ctk.CTkFrame):
         frame_veiculo = ctk.CTkFrame(dialog, fg_color="transparent")
         frame_veiculo.pack(fill="x", padx=24, pady=(0, 10))
         ctk.CTkLabel(frame_veiculo, text="VEÍCULO", font=ctk.CTkFont(size=11, weight="bold"),
-            text_color=CORES["texto_sec"]).pack(anchor="w")
+            text_color=("gray40", "gray60")).pack(anchor="w")
         veiculos = self._listar_veiculos()
         combo_veiculo = ctk.CTkComboBox(frame_veiculo, values=veiculos, height=38,
             font=ctk.CTkFont(size=13), state="readonly")
@@ -324,7 +324,7 @@ class TelaHistorico(ctk.CTkFrame):
         frame_valor = ctk.CTkFrame(dialog, fg_color="transparent")
         frame_valor.pack(fill="x", padx=24, pady=(0, 10))
         ctk.CTkLabel(frame_valor, text="VALOR (R$)", font=ctk.CTkFont(size=11, weight="bold"),
-            text_color=CORES["texto_sec"]).pack(anchor="w")
+            text_color=("gray40", "gray60")).pack(anchor="w")
         entry_valor = ctk.CTkEntry(frame_valor, height=38, font=ctk.CTkFont(size=13))
         entry_valor.pack(fill="x", pady=(2, 0))
         entry_valor.insert(0, str(valor).replace(".", ","))
