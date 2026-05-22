@@ -207,6 +207,12 @@ class TelaRelatorio(ctk.CTkFrame):
             self._mostrar_placeholder()
             return
 
+        # ── Largura dinâmica ──────────────────────────────────
+        self.frame_tabela.update_idletasks()
+        largura = self.frame_tabela.winfo_width()
+        col_nome = max(180, int(largura * 0.18))
+        col_mes = max(70, int((largura - col_nome - 32) / 12))
+
         # ── Cabeçalho ────────────────────────────────────────
         header_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
         header_frame.pack(fill="x", pady=(0, 2))
@@ -216,7 +222,7 @@ class TelaRelatorio(ctk.CTkFrame):
             text="VEÍCULO",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="#FFFFFF",
-            width=COL_NOME,
+            width=col_nome,
             anchor="w",
         ).pack(side="left", padx=(8, 0), pady=6)
 
@@ -226,7 +232,7 @@ class TelaRelatorio(ctk.CTkFrame):
                 text=mes[:3].upper(),
                 font=ctk.CTkFont(size=11, weight="bold"),
                 text_color="#FFFFFF",
-                width=COL_MES,
+                width=col_mes,
                 anchor="center",
             ).pack(side="left", pady=6)
 
@@ -245,16 +251,16 @@ class TelaRelatorio(ctk.CTkFrame):
                 ).pack(anchor="w", padx=8, pady=(2, 0))
 
             row = ctk.CTkFrame(self.frame_tabela, fg_color=("gray92", "gray20"), corner_radius=4)
-            row.pack(fill="x", pady=1)
+            row.pack(fill="x", pady=2)
 
             ctk.CTkLabel(
                 row,
                 text=nome,
                 font=ctk.CTkFont(size=11),
                 text_color=("gray10", "gray90"),
-                width=COL_NOME,
+                width=col_nome,
                 anchor="w",
-            ).pack(side="left", padx=(8, 0), pady=5)
+            ).pack(side="left", padx=(8, 0), pady=7)
 
             for val in valores:
                 texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
@@ -262,23 +268,26 @@ class TelaRelatorio(ctk.CTkFrame):
                     row,
                     text=texto,
                     font=ctk.CTkFont(size=10),
-                    text_color=("gray10", "gray90") if val else CORES["texto_sec"],
-                    width=COL_MES,
+                    text_color=("gray10", "gray90") if val else ("gray40", "gray60"),
+                    width=col_mes,
                     anchor="center",
-                ).pack(side="left", pady=5)
+                ).pack(side="left", pady=7)
 
         # ── Total ─────────────────────────────────────────────
+        sep = ctk.CTkFrame(self.frame_tabela, fg_color=("gray80", "gray30"), height=2)
+        sep.pack(fill="x", pady=(8, 2))
+
         total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#7C2D12", corner_radius=6)
-        total_frame.pack(fill="x", pady=(8, 0))
+        total_frame.pack(fill="x", pady=(2, 0))
 
         ctk.CTkLabel(
             total_frame,
             text="TOTAL MÊS",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="#FFFFFF",
-            width=COL_NOME,
+            width=col_nome,
             anchor="w",
-        ).pack(side="left", padx=(8, 0), pady=7)
+        ).pack(side="left", padx=(8, 0), pady=8)
 
         for val in dados.get("totais_mes", [0] * 12):
             texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
@@ -287,9 +296,9 @@ class TelaRelatorio(ctk.CTkFrame):
                 text=texto,
                 font=ctk.CTkFont(size=10, weight="bold"),
                 text_color="#FFFFFF",
-                width=COL_MES,
+                width=col_mes,
                 anchor="center",
-            ).pack(side="left", pady=7)
+            ).pack(side="left", pady=8)
 
     def _mostrar_status(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]
@@ -342,7 +351,7 @@ class TelaRelatorio(ctk.CTkFrame):
         }
 
         self._ultimo_dados = dados
-        self._renderizar_tabela(dados)
+        self.after(50, lambda: self._renderizar_tabela(dados))
 
     def _exportar_excel(self):
         if not hasattr(self, '_ultimo_dados'):
