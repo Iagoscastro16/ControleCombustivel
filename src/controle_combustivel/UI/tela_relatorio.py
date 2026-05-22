@@ -294,7 +294,7 @@ class TelaRelatorio(ctk.CTkFrame):
                 row,
                 text=f"{av:.1f}%",
                 font=ctk.CTkFont(size=10, weight="bold"),
-                text_color=CORES["primario"],
+                text_color="#60A5FA",
                 width=col_av,
                 anchor="center",
             ).pack(side="left", pady=7)
@@ -337,7 +337,7 @@ class TelaRelatorio(ctk.CTkFrame):
         ).pack(side="left", pady=8)
 
         # ── Análise Horizontal ────────────────────────────────
-        ah_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
+        ah_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#1E293B", corner_radius=6)
         ah_frame.pack(fill="x", pady=(2, 0))
 
         ctk.CTkLabel(
