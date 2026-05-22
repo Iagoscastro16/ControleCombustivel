@@ -5,6 +5,7 @@ import customtkinter as ctk
 from datetime import datetime
 from tkinter import filedialog
 from functions.relatorio import gerar_relatorio, exportar_excel
+from functions.utils import calcular_av, calcular_ah
 
 CORES = {
     "header":    "#1A1A2E",
@@ -211,7 +212,11 @@ class TelaRelatorio(ctk.CTkFrame):
         self.frame_tabela.update_idletasks()
         largura = self.frame_tabela.winfo_width()
         col_nome = max(180, int(largura * 0.18))
-        col_mes = max(70, int((largura - col_nome - 32) / 12))
+        col_av   = 60
+        col_mes  = max(70, int((largura - col_nome - col_av - 32) / 12))
+
+        # Total geral pra AV
+        total_geral = sum(sum(v for v in valores if v) for _, _, valores in dados.get("veiculos", []))
 
         # ── Cabeçalho ────────────────────────────────────────
         header_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
@@ -235,6 +240,15 @@ class TelaRelatorio(ctk.CTkFrame):
                 width=col_mes,
                 anchor="center",
             ).pack(side="left", pady=6)
+
+        ctk.CTkLabel(
+            header_frame,
+            text="A/V%",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#FFFFFF",
+            width=col_av,
+            anchor="center",
+        ).pack(side="left", pady=6)
 
         # ── Linhas ───────────────────────────────────────────
         categoria_atual = None
@@ -273,6 +287,18 @@ class TelaRelatorio(ctk.CTkFrame):
                     anchor="center",
                 ).pack(side="left", pady=7)
 
+            # AV por veículo
+            total_veiculo = sum(v for v in valores if v)
+            av = calcular_av(total_veiculo, total_geral)
+            ctk.CTkLabel(
+                row,
+                text=f"{av:.1f}%",
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=CORES["primario"],
+                width=col_av,
+                anchor="center",
+            ).pack(side="left", pady=7)
+
         # ── Total ─────────────────────────────────────────────
         sep = ctk.CTkFrame(self.frame_tabela, fg_color=("gray80", "gray30"), height=2)
         sep.pack(fill="x", pady=(8, 2))
@@ -289,7 +315,8 @@ class TelaRelatorio(ctk.CTkFrame):
             anchor="w",
         ).pack(side="left", padx=(8, 0), pady=8)
 
-        for val in dados.get("totais_mes", [0] * 12):
+        totais_mes = dados.get("totais_mes", [0] * 12)
+        for val in totais_mes:
             texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
             ctk.CTkLabel(
                 total_frame,
@@ -299,6 +326,71 @@ class TelaRelatorio(ctk.CTkFrame):
                 width=col_mes,
                 anchor="center",
             ).pack(side="left", pady=8)
+
+        ctk.CTkLabel(
+            total_frame,
+            text="100%",
+            font=ctk.CTkFont(size=10, weight="bold"),
+            text_color="#FFFFFF",
+            width=col_av,
+            anchor="center",
+        ).pack(side="left", pady=8)
+
+        # ── Análise Horizontal ────────────────────────────────
+        ah_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
+        ah_frame.pack(fill="x", pady=(2, 0))
+
+        ctk.CTkLabel(
+            ah_frame,
+            text="A/H %",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#FFFFFF",
+            width=col_nome,
+            anchor="w",
+        ).pack(side="left", padx=(8, 0), pady=7)
+
+        # Primeiro mês sem anterior
+        ctk.CTkLabel(
+            ah_frame,
+            text="-",
+            font=ctk.CTkFont(size=10),
+            text_color="#FFFFFF",
+            width=col_mes,
+            anchor="center",
+        ).pack(side="left", pady=7)
+
+        for atual, anterior in zip(totais_mes[1:], totais_mes[:-1]):
+            ah = calcular_ah(atual, anterior)
+            if anterior == 0:
+                texto = "-"
+                cor = "#FFFFFF"
+            elif ah > 0:
+                texto = f"+{ah:.1f}%"
+                cor = "#FCA5A5"
+            elif ah < 0:
+                texto = f"{ah:.1f}%"
+                cor = "#6EE7B7"
+            else:
+                texto = "0%"
+                cor = "#FFFFFF"
+
+            ctk.CTkLabel(
+                ah_frame,
+                text=texto,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=cor,
+                width=col_mes,
+                anchor="center",
+            ).pack(side="left", pady=7)
+
+        ctk.CTkLabel(
+            ah_frame,
+            text="-",
+            font=ctk.CTkFont(size=10),
+            text_color="#FFFFFF",
+            width=col_av,
+            anchor="center",
+        ).pack(side="left", pady=7)
 
     def _mostrar_status(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]
