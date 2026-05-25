@@ -1,5 +1,4 @@
 import os
-import tempfile
 import platform
 import customtkinter as ctk
 from datetime import datetime
@@ -20,14 +19,46 @@ CORES = {
     "fundo":     "#F0F4F8",
 }
 
+MESES_ABREV = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+               "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"]
+
 MESES = [
     "Janeiro", "Fevereiro", "Março", "Abril",
     "Maio", "Junho", "Julho", "Agosto",
     "Setembro", "Outubro", "Novembro", "Dezembro",
 ]
 
-COL_NOME = 210
-COL_MES  = 80
+# Colunas fixas — só nome e A/V% têm tamanho definido
+# As colunas de mês se esticam automaticamente via grid weight=1
+COL_NOME = 200
+COL_AV   = 65
+
+
+def _row_grid(parent, n_meses, fg_color, corner_radius=4):
+    """
+    Cria um frame filho com grid configurado:
+      col 0        → nome (COL_NOME, sem stretch)
+      col 1..N     → meses (weight=1, uniform="meses" — todas com exatamente o mesmo tamanho)
+      col N+1      → A/V% (COL_AV, sem stretch)
+    """
+    frame = ctk.CTkFrame(parent, fg_color=fg_color, corner_radius=corner_radius)
+    frame.pack(fill="x", pady=1)
+    frame.columnconfigure(0, minsize=COL_NOME, weight=0)
+    for c in range(1, n_meses + 1):
+        frame.columnconfigure(c, weight=1, uniform="meses")
+    frame.columnconfigure(n_meses + 1, minsize=COL_AV, weight=0)
+    return frame
+
+
+def _label(parent, text, col, row=0, font_size=10, bold=False, color=("gray10","gray90"),
+           anchor="center", padx=4, pady=5, sticky="ew"):
+    ctk.CTkLabel(
+        parent,
+        text=text,
+        font=ctk.CTkFont(size=font_size, weight="bold" if bold else "normal"),
+        text_color=color,
+        anchor=anchor,
+    ).grid(row=row, column=col, padx=padx, pady=pady, sticky=sticky)
 
 
 class TelaRelatorio(ctk.CTkFrame):
@@ -45,8 +76,7 @@ class TelaRelatorio(ctk.CTkFrame):
         ctk.CTkButton(
             header,
             text="← Voltar",
-            width=90,
-            height=32,
+            width=90, height=32,
             fg_color="transparent",
             hover_color="#2D2D4E",
             font=ctk.CTkFont(size=13),
@@ -76,8 +106,7 @@ class TelaRelatorio(ctk.CTkFrame):
         self.combo_ano = ctk.CTkComboBox(
             frame_ctrl,
             values=self._listar_anos(),
-            width=120,
-            height=42,
+            width=120, height=42,
             font=ctk.CTkFont(size=14),
             state="readonly",
         )
@@ -85,49 +114,37 @@ class TelaRelatorio(ctk.CTkFrame):
         self.combo_ano.set(str(datetime.now().year))
 
         self.btn_gerar = ctk.CTkButton(
-            frame_ctrl,
-            text="GERAR",
-            width=100,
-            height=42,
+            frame_ctrl, text="GERAR",
+            width=100, height=42,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color=CORES["primario"],
-            hover_color=CORES["hover"],
+            fg_color=CORES["primario"], hover_color=CORES["hover"],
             command=self._gerar,
         )
         self.btn_gerar.pack(side="left", padx=(0, 8))
 
         self.btn_excel = ctk.CTkButton(
-            frame_ctrl,
-            text="EXPORTAR EXCEL",
-            width=160,
-            height=42,
+            frame_ctrl, text="EXPORTAR EXCEL",
+            width=160, height=42,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color=CORES["sucesso"],
-            hover_color="#059669",
+            fg_color=CORES["sucesso"], hover_color="#059669",
             command=self._exportar_excel,
         )
         self.btn_excel.pack(side="left", padx=(0, 8))
 
         self.btn_imprimir = ctk.CTkButton(
-            frame_ctrl,
-            text="IMPRIMIR",
-            width=110,
-            height=42,
+            frame_ctrl, text="IMPRIMIR",
+            width=110, height=42,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color="#374151",
-            hover_color="#4B5563",
+            fg_color="#374151", hover_color="#4B5563",
             command=self._imprimir,
         )
         self.btn_imprimir.pack(side="left", padx=(0, 16))
 
         self.btn_historico = ctk.CTkButton(
-            frame_ctrl,
-            text="HISTÓRICO",
-            width=110,
-            height=42,
+            frame_ctrl, text="HISTÓRICO",
+            width=110, height=42,
             font=ctk.CTkFont(size=13, weight="bold"),
-            fg_color="#374151",
-            hover_color="#4B5563",
+            fg_color="#374151", hover_color="#4B5563",
             command=lambda: self.navegar("historico"),
         )
         self.btn_historico.pack(side="left", padx=(0, 16))
@@ -141,7 +158,6 @@ class TelaRelatorio(ctk.CTkFrame):
         ).pack(side="left")
 
         # ── Navegação por teclado ─────────────────────────────
-        # Tab: ANO → GERAR → EXPORTAR → IMPRIMIR → HISTÓRICO → ANO
         self.combo_ano.bind("<Tab>", lambda e: (self.btn_gerar.focus_set(), "break"))
         self.combo_ano.bind("<Down>", lambda e: self.combo_ano._open_dropdown_menu())
 
@@ -166,8 +182,7 @@ class TelaRelatorio(ctk.CTkFrame):
         self.btn_historico.bind("<FocusOut>", lambda e: self.btn_historico.configure(fg_color="#374151"))
 
         self.lbl_status = ctk.CTkLabel(
-            card_ctrl,
-            text="",
+            card_ctrl, text="",
             font=ctk.CTkFont(size=12),
             text_color=CORES["sucesso"],
         )
@@ -176,23 +191,19 @@ class TelaRelatorio(ctk.CTkFrame):
         card_tabela = ctk.CTkFrame(self, fg_color=("gray90", "gray17"), corner_radius=12)
         card_tabela.pack(padx=24, pady=(0, 24), fill="both", expand=True)
 
-        self.frame_tabela = ctk.CTkScrollableFrame(
-            card_tabela, fg_color="transparent"
-        )
+        self.frame_tabela = ctk.CTkScrollableFrame(card_tabela, fg_color="transparent")
         self.frame_tabela.pack(fill="both", expand=True, padx=16, pady=16)
 
         self._mostrar_placeholder()
 
     def ao_exibir(self):
-        """Chamado pelo app.py toda vez que essa tela é exibida."""
         if hasattr(self, '_ultimo_dados'):
             del self._ultimo_dados
         self._mostrar_placeholder()
 
     def _mostrar_placeholder(self):
-        for widget in self.frame_tabela.winfo_children():
-            widget.destroy()
-
+        for w in self.frame_tabela.winfo_children():
+            w.destroy()
         ctk.CTkLabel(
             self.frame_tabela,
             text="Selecione o ano e clique em GERAR",
@@ -200,197 +211,141 @@ class TelaRelatorio(ctk.CTkFrame):
             text_color=("gray40", "gray60"),
         ).pack(pady=50)
 
+    # ── Renderização ──────────────────────────────────────────────────────────
+
     def _renderizar_tabela(self, dados):
-        for widget in self.frame_tabela.winfo_children():
-            widget.destroy()
+        for w in self.frame_tabela.winfo_children():
+            w.destroy()
 
         if not dados:
             self._mostrar_placeholder()
             return
 
-        # ── Largura dinâmica ──────────────────────────────────
-        self.frame_tabela.update_idletasks()
-        largura = self.frame_tabela.winfo_width()
-        col_nome = max(180, int(largura * 0.18))
-        col_av   = 60
-        col_mes  = max(70, int((largura - col_nome - col_av - 32) / 12))
+        # A/V% calculado UMA vez com total anual completo
+        total_geral = sum(
+            sum(v for v in vals if v)
+            for _, _, vals in dados.get("veiculos", [])
+        )
+        totais_mes = dados.get("totais_mes", [0.0] * 12)
+        ano = self.combo_ano.get()
 
-        # Total geral pra AV
-        total_geral = sum(sum(v for v in valores if v) for _, _, valores in dados.get("veiculos", []))
+        self._renderizar_bloco(dados, list(range(0, 6)),  total_geral, totais_mes, ano)
+        ctk.CTkFrame(self.frame_tabela, fg_color="transparent", height=28).pack()
+        self._renderizar_bloco(dados, list(range(6, 12)), total_geral, totais_mes, ano)
 
-        # ── Cabeçalho ────────────────────────────────────────
-        header_frame = ctk.CTkFrame(self.frame_tabela, fg_color=CORES["header"], corner_radius=6)
-        header_frame.pack(fill="x", pady=(0, 2))
+    def _renderizar_bloco(self, dados, meses_idx, total_geral, totais_mes, ano):
+        n = len(meses_idx)  # sempre 6
+        nomes = [MESES_ABREV[i] for i in meses_idx]
 
+        # ── Título ────────────────────────────────────────────
         ctk.CTkLabel(
-            header_frame,
-            text="VEÍCULO",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="#FFFFFF",
-            width=col_nome,
-            anchor="w",
-        ).pack(side="left", padx=(8, 0), pady=6)
+            self.frame_tabela,
+            text=f"COMBUSTIVEL {ano} (POSTO/CAIXA)",
+            font=ctk.CTkFont(size=13, weight="bold"),
+            text_color=("gray20", "gray80"),
+        ).pack(anchor="center", pady=(0, 4))
 
-        for mes in MESES:
-            ctk.CTkLabel(
-                header_frame,
-                text=mes[:3].upper(),
-                font=ctk.CTkFont(size=11, weight="bold"),
-                text_color="#FFFFFF",
-                width=col_mes,
-                anchor="center",
-            ).pack(side="left", pady=6)
+        # ── Cabeçalho ─────────────────────────────────────────
+        hdr = _row_grid(self.frame_tabela, n, fg_color=CORES["header"], corner_radius=6)
+        _label(hdr, "VEÍCULOS/PERÍODO", col=0, font_size=11, bold=True,
+               color="#FFFFFF", anchor="w", padx=(8, 4))
+        for i, mes in enumerate(nomes, start=1):
+            _label(hdr, mes, col=i, font_size=11, bold=True, color="#FFFFFF", padx=0)
+        _label(hdr, "A/V %", col=n+1, font_size=11, bold=True, color="#FFFFFF", padx=0)
 
-        ctk.CTkLabel(
-            header_frame,
-            text="A/V%",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="#FFFFFF",
-            width=col_av,
-            anchor="center",
-        ).pack(side="left", pady=6)
-
-        # ── Linhas ───────────────────────────────────────────
+        # ── Veículos ──────────────────────────────────────────
         categoria_atual = None
+
         for nome, categoria, valores in dados.get("veiculos", []):
+
+            # Separador de categoria
             if categoria != categoria_atual:
                 categoria_atual = categoria
-                sep = ctk.CTkFrame(self.frame_tabela, fg_color=("gray80", "gray30"), height=2)
-                sep.pack(fill="x", pady=(8, 2))
+                cat = ctk.CTkFrame(self.frame_tabela, fg_color=("gray72", "gray30"), corner_radius=4)
+                cat.pack(fill="x", pady=(6, 1))
                 ctk.CTkLabel(
-                    self.frame_tabela,
+                    cat,
                     text=categoria.upper(),
                     font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=("gray40", "gray60"),
-                ).pack(anchor="w", padx=8, pady=(2, 0))
+                    text_color=("gray15", "gray85"),
+                ).pack(side="left", padx=8, pady=4)
 
-            row = ctk.CTkFrame(self.frame_tabela, fg_color=("gray92", "gray20"), corner_radius=4)
-            row.pack(fill="x", pady=2)
-
-            ctk.CTkLabel(
-                row,
-                text=nome,
-                font=ctk.CTkFont(size=11),
-                text_color=("gray10", "gray90"),
-                width=col_nome,
-                anchor="w",
-            ).pack(side="left", padx=(8, 0), pady=7)
-
-            for val in valores:
-                texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
-                ctk.CTkLabel(
-                    row,
-                    text=texto,
-                    font=ctk.CTkFont(size=10),
-                    text_color=("gray10", "gray90") if val else ("gray40", "gray60"),
-                    width=col_mes,
-                    anchor="center",
-                ).pack(side="left", pady=7)
-
-            # AV por veículo
             total_veiculo = sum(v for v in valores if v)
-            av = calcular_av(total_veiculo, total_geral)
-            ctk.CTkLabel(
-                row,
-                text=f"{av:.1f}%",
-                font=ctk.CTkFont(size=10, weight="bold"),
-                text_color="#60A5FA",
-                width=col_av,
-                anchor="center",
-            ).pack(side="left", pady=7)
+            av_texto = f"{calcular_av(total_veiculo, total_geral):.1f}%" if total_veiculo > 0 else "-"
+            av_cor   = "#60A5FA" if total_veiculo > 0 else ("gray50", "gray50")
 
-        # ── Total ─────────────────────────────────────────────
-        sep = ctk.CTkFrame(self.frame_tabela, fg_color=("gray80", "gray30"), height=2)
-        sep.pack(fill="x", pady=(8, 2))
+            # Linha de valores
+            row_v = _row_grid(self.frame_tabela, n, fg_color=("gray92", "gray20"))
+            _label(row_v, nome, col=0, font_size=11, color=("gray10","gray90"),
+                   anchor="w", padx=(8, 4), pady=5)
+            for i, idx in enumerate(meses_idx, start=1):
+                val = valores[idx]
+                txt = (f"R$ {val:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
+                       if val else "-")
+                _label(row_v, txt, col=i, font_size=10,
+                       color=("gray10","gray90") if val else ("gray50","gray50"), pady=5, padx=0)
+            _label(row_v, av_texto, col=n+1, font_size=10, bold=True,
+                   color=av_cor, pady=5, padx=0)
 
-        total_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#7C2D12", corner_radius=6)
-        total_frame.pack(fill="x", pady=(2, 0))
+            # Linha A/H% do veículo
+            row_ah = _row_grid(self.frame_tabela, n, fg_color=("gray86", "gray23"))
+            _label(row_ah, "", col=0, padx=(8, 4), pady=3)
+            for i, idx in enumerate(meses_idx, start=1):
+                txt, cor = self._ah_veiculo(valores, idx)
+                _label(row_ah, txt, col=i, font_size=9, color=cor, pady=3, padx=0)
+            _label(row_ah, "", col=n+1, pady=3, padx=0)
 
-        ctk.CTkLabel(
-            total_frame,
-            text="TOTAL MÊS",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="#FFFFFF",
-            width=col_nome,
-            anchor="w",
-        ).pack(side="left", padx=(8, 0), pady=8)
+        # ── Separador ─────────────────────────────────────────
+        ctk.CTkFrame(self.frame_tabela, fg_color=("gray75","gray35"), height=2).pack(
+            fill="x", pady=(8, 2))
 
-        totais_mes = dados.get("totais_mes", [0] * 12)
-        for val in totais_mes:
-            texto = f"R$ {val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if val else "-"
-            ctk.CTkLabel(
-                total_frame,
-                text=texto,
-                font=ctk.CTkFont(size=10, weight="bold"),
-                text_color="#FFFFFF",
-                width=col_mes,
-                anchor="center",
-            ).pack(side="left", pady=8)
+        # ── TOTAL MÊS ─────────────────────────────────────────
+        row_t = _row_grid(self.frame_tabela, n, fg_color="#7C2D12", corner_radius=6)
+        _label(row_t, "TOTAL MÊS", col=0, font_size=11, bold=True,
+               color="#FFFFFF", anchor="w", padx=(8, 4), pady=7)
+        for i, idx in enumerate(meses_idx, start=1):
+            val = totais_mes[idx]
+            txt = (f"R$ {val:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
+                   if val else "-")
+            _label(row_t, txt, col=i, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
+        _label(row_t, "100%", col=n+1, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
 
-        ctk.CTkLabel(
-            total_frame,
-            text="100%",
-            font=ctk.CTkFont(size=10, weight="bold"),
-            text_color="#FFFFFF",
-            width=col_av,
-            anchor="center",
-        ).pack(side="left", pady=8)
+        # ── A/H % geral ───────────────────────────────────────
+        row_ah_g = _row_grid(self.frame_tabela, n, fg_color="#1E293B", corner_radius=6)
+        _label(row_ah_g, "A/H %", col=0, font_size=11, bold=True,
+               color="#FFFFFF", anchor="w", padx=(8, 4), pady=6)
+        for i, idx in enumerate(meses_idx, start=1):
+            txt, cor = self._ah_total(totais_mes, idx)
+            _label(row_ah_g, txt, col=i, font_size=10, bold=True, color=cor, pady=6, padx=0)
+        _label(row_ah_g, "-", col=n+1, font_size=10, color="#FFFFFF", pady=6, padx=0)
 
-        # ── Análise Horizontal ────────────────────────────────
-        ah_frame = ctk.CTkFrame(self.frame_tabela, fg_color="#1E293B", corner_radius=6)
-        ah_frame.pack(fill="x", pady=(2, 0))
+    # ── Helpers A/H ───────────────────────────────────────────────────────────
 
-        ctk.CTkLabel(
-            ah_frame,
-            text="A/H %",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="#FFFFFF",
-            width=col_nome,
-            anchor="w",
-        ).pack(side="left", padx=(8, 0), pady=7)
+    def _ah_veiculo(self, valores, idx):
+        if idx == 0:
+            return "-", ("gray50", "gray50")
+        val_a, val_p = valores[idx], valores[idx - 1]
+        if not val_p:
+            return "-", ("gray50", "gray50")
+        if not val_a:
+            return "-100,0%", "#6EE7B7"
+        ah = calcular_ah(val_a, val_p)
+        if ah > 0:   return f"+{ah:.1f}%", "#FCA5A5"
+        elif ah < 0: return f"{ah:.1f}%",  "#6EE7B7"
+        return "0,0%", ("gray60", "gray50")
 
-        # Primeiro mês sem anterior
-        ctk.CTkLabel(
-            ah_frame,
-            text="-",
-            font=ctk.CTkFont(size=10),
-            text_color="#FFFFFF",
-            width=col_mes,
-            anchor="center",
-        ).pack(side="left", pady=7)
+    def _ah_total(self, totais_mes, idx):
+        if idx == 0:
+            return "-", "#FFFFFF"
+        val_a, val_p = totais_mes[idx], totais_mes[idx - 1]
+        if not val_p:
+            return "-", "#FFFFFF"
+        ah = calcular_ah(val_a, val_p)
+        if ah > 0:   return f"+{ah:.1f}%", "#FCA5A5"
+        elif ah < 0: return f"{ah:.1f}%",  "#6EE7B7"
+        return "0%", "#FFFFFF"
 
-        for atual, anterior in zip(totais_mes[1:], totais_mes[:-1]):
-            ah = calcular_ah(atual, anterior)
-            if anterior == 0:
-                texto = "-"
-                cor = "#FFFFFF"
-            elif ah > 0:
-                texto = f"+{ah:.1f}%"
-                cor = "#FCA5A5"
-            elif ah < 0:
-                texto = f"{ah:.1f}%"
-                cor = "#6EE7B7"
-            else:
-                texto = "0%"
-                cor = "#FFFFFF"
-
-            ctk.CTkLabel(
-                ah_frame,
-                text=texto,
-                font=ctk.CTkFont(size=10, weight="bold"),
-                text_color=cor,
-                width=col_mes,
-                anchor="center",
-            ).pack(side="left", pady=7)
-
-        ctk.CTkLabel(
-            ah_frame,
-            text="-",
-            font=ctk.CTkFont(size=10),
-            text_color="#FFFFFF",
-            width=col_av,
-            anchor="center",
-        ).pack(side="left", pady=7)
+    # ── Utilitários ───────────────────────────────────────────────────────────
 
     def _mostrar_status(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]
@@ -420,28 +375,20 @@ class TelaRelatorio(ctk.CTkFrame):
         veiculos_dict = {}
         for nome, categoria, mes, valor in dados_crus:
             if nome not in veiculos_dict:
-                veiculos_dict[nome] = {
-                    "categoria": categoria,
-                    "valores": [0.0] * 12
-                }
-            indice = int(mes) - 1
-            veiculos_dict[nome]["valores"][indice] = valor
+                veiculos_dict[nome] = {"categoria": categoria, "valores": [0.0] * 12}
+            veiculos_dict[nome]["valores"][int(mes) - 1] = valor
 
         veiculos_lista = sorted(
-            [(nome, info["categoria"], info["valores"]) for nome, info in veiculos_dict.items()],
+            [(n, i["categoria"], i["valores"]) for n, i in veiculos_dict.items()],
             key=lambda x: (x[1], x[0])
         )
 
         totais_mes = [0.0] * 12
-        for _, _, valores in veiculos_lista:
-            for i, val in enumerate(valores):
-                totais_mes[i] += val
+        for _, _, vals in veiculos_lista:
+            for i, v in enumerate(vals):
+                totais_mes[i] += v
 
-        dados = {
-            "veiculos": veiculos_lista,
-            "totais_mes": totais_mes
-        }
-
+        dados = {"veiculos": veiculos_lista, "totais_mes": totais_mes}
         self._ultimo_dados = dados
         self.after(50, lambda: self._renderizar_tabela(dados))
 
@@ -451,18 +398,14 @@ class TelaRelatorio(ctk.CTkFrame):
             return
 
         ano = self.combo_ano.get()
-        mes_atual = datetime.now().strftime("%m")
-
         caminho = filedialog.asksaveasfilename(
             defaultextension=".xlsx",
             filetypes=[("Excel", "*.xlsx")],
-            initialfile=f"COMBUSTIVEL_{ano}_{mes_atual}.xlsx",
+            initialfile=f"COMBUSTIVEL_{ano}_{datetime.now().strftime('%m')}.xlsx",
             title="Salvar relatório Excel"
         )
-
         if not caminho:
             return
-
         try:
             exportar_excel(self._ultimo_dados, ano, caminho)
             self._mostrar_status("Excel exportado com sucesso!")
@@ -473,7 +416,6 @@ class TelaRelatorio(ctk.CTkFrame):
         if not hasattr(self, '_ultimo_dados'):
             self._mostrar_status("Gere o relatório primeiro!", sucesso=False)
             return
-
         try:
             caminho_xlsx = os.path.join(os.environ.get("TEMP", "/tmp"), "combustivel_temp.xlsx")
             exportar_excel(self._ultimo_dados, self.combo_ano.get(), caminho_xlsx)
@@ -488,6 +430,5 @@ class TelaRelatorio(ctk.CTkFrame):
                 import subprocess
                 subprocess.Popen(["xdg-open", caminho_xlsx])
                 self._mostrar_status("Arquivo aberto! Use Ctrl+P para imprimir.")
-
         except Exception as e:
             self._mostrar_status(f"Erro ao imprimir: {e}", sucesso=False)
