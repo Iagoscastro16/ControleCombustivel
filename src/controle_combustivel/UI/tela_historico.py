@@ -4,9 +4,9 @@ from functions.abastecimentos import listar_abastecimentos, excluir_abasteciment
 from functions.veiculos import listar_veiculos
 
 CORES = {
-    "header":    "#1A1A2E",
-    "primario":  "#4F46E5",
-    "hover":     "#4338CA",
+    "header":    "#1C1917",
+    "primario":  "#F97316",
+    "hover":     "#EA6C0A",
     "sucesso":   "#10B981",
     "perigo":    "#EF4444",
     "texto":     "#1F2937",
@@ -35,16 +35,17 @@ class TelaHistorico(ctk.CTkFrame):
         header.pack(fill="x")
         header.pack_propagate(False)
 
-        ctk.CTkButton(
+        self.btn_voltar = ctk.CTkButton(
             header,
             text="← Voltar",
             width=90,
             height=32,
             fg_color="transparent",
-            hover_color="#2D2D4E",
+            hover_color="#2C2420",
             font=ctk.CTkFont(size=13),
             command=lambda: self.navegar("relatorio"),
-        ).pack(side="left", padx=16)
+        )
+        self.btn_voltar.pack(side="left", padx=16)
 
         ctk.CTkLabel(
             header,
@@ -109,14 +110,19 @@ class TelaHistorico(ctk.CTkFrame):
         self.btn_buscar.pack(side="left")
 
         # ── Navegação por teclado ─────────────────────────────
-        # Tab: MÊS → ANO → BUSCAR → MÊS
+        # Tab: Voltar → MÊS → ANO → BUSCAR → Voltar
+        self.btn_voltar.bind("<Tab>", lambda e: (self.combo_mes.focus_set(), "break"))
+        self.btn_voltar.bind("<Return>", lambda e: self.navegar("relatorio"))
+        self.btn_voltar.bind("<FocusIn>", lambda e: self.btn_voltar.configure(fg_color="#2C2420"))
+        self.btn_voltar.bind("<FocusOut>", lambda e: self.btn_voltar.configure(fg_color="transparent"))
+
         self.combo_mes.bind("<Tab>", lambda e: (self.combo_ano.focus_set(), "break"))
         self.combo_mes.bind("<Down>", lambda e: self.combo_mes._open_dropdown_menu())
 
         self.combo_ano.bind("<Tab>", lambda e: (self.btn_buscar.focus_set(), "break"))
         self.combo_ano.bind("<Down>", lambda e: self.combo_ano._open_dropdown_menu())
 
-        self.btn_buscar.bind("<Tab>", lambda e: (self.combo_mes.focus_set(), "break"))
+        self.btn_buscar.bind("<Tab>", lambda e: (self.btn_voltar.focus_set(), "break"))
         self.btn_buscar.bind("<Return>", lambda e: self._buscar())
         self.btn_buscar.bind("<FocusIn>", lambda e: self.btn_buscar.configure(fg_color=CORES["hover"]))
         self.btn_buscar.bind("<FocusOut>", lambda e: self.btn_buscar.configure(fg_color=CORES["primario"]))
@@ -156,6 +162,7 @@ class TelaHistorico(ctk.CTkFrame):
 
     def ao_exibir(self):
         self._buscar()
+        self.combo_mes.focus()
 
     def _mostrar_placeholder(self):
         for widget in self.frame_lista.winfo_children():
