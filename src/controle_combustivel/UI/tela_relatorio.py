@@ -345,7 +345,7 @@ class TelaRelatorio(ctk.CTkFrame):
         if not val_p:
             return "-", ("gray50", "gray50")
         if not val_a:
-            return "-100,0%", "#6EE7B7"
+            return "-", ("gray50","gray50")
         ah = calcular_ah(val_a, val_p)
         if ah > 0:   return f"+{ah:.1f}%", "#FCA5A5"
         elif ah < 0: return f"{ah:.1f}%",  "#6EE7B7"
@@ -355,6 +355,8 @@ class TelaRelatorio(ctk.CTkFrame):
         if idx == 0:
             return "-", "#FFFFFF"
         val_a, val_p = totais_mes[idx], totais_mes[idx - 1]
+        if not val_a:
+            return "-", "#FFFFFF"
         if not val_p:
             return "-", "#FFFFFF"
         ah = calcular_ah(val_a, val_p)

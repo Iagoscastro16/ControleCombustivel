@@ -87,7 +87,7 @@ def exportar_excel(dados, ano, caminho):
     def _calcular_ah(atual, anterior):
         if not anterior or anterior == 0:
             return None
-        return (atual / anterior - 1) if atual else -1.0
+        return (atual / anterior - 1) if atual else None
 
     # ── Escreve um bloco semestral ────────────────────────────
     def escrever_bloco(linha_inicio, meses_idx, meses_nomes):
