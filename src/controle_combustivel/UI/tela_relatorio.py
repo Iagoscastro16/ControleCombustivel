@@ -30,8 +30,9 @@ MESES = [
 
 # Colunas fixas — só nome e A/V% têm tamanho definido
 # As colunas de mês se esticam automaticamente via grid weight=1
-COL_NOME = 200
-COL_AV   = 65
+COL_NOME  = 200
+COL_TOTAL = 90
+COL_AV    = 65
 
 
 def _row_grid(parent, n_meses, fg_color, corner_radius=4):
@@ -39,14 +40,16 @@ def _row_grid(parent, n_meses, fg_color, corner_radius=4):
     Cria um frame filho com grid configurado:
       col 0        → nome (COL_NOME, sem stretch)
       col 1..N     → meses (weight=1, uniform="meses" — todas com exatamente o mesmo tamanho)
-      col N+1      → A/V% (COL_AV, sem stretch)
+      col N+1      → TOTAL ANO (COL_TOTAL, sem stretch)
+      col N+2      → A/V% (COL_AV, sem stretch)
     """
     frame = ctk.CTkFrame(parent, fg_color=fg_color, corner_radius=corner_radius)
     frame.pack(fill="x", pady=1)
     frame.columnconfigure(0, minsize=COL_NOME, weight=0)
     for c in range(1, n_meses + 1):
         frame.columnconfigure(c, weight=1, uniform="meses")
-    frame.columnconfigure(n_meses + 1, minsize=COL_AV, weight=0)
+    frame.columnconfigure(n_meses + 1, minsize=COL_TOTAL, weight=0)
+    frame.columnconfigure(n_meses + 2, minsize=COL_AV, weight=0)
     return frame
 
 
@@ -259,7 +262,8 @@ class TelaRelatorio(ctk.CTkFrame):
                color="#FFFFFF", anchor="w", padx=(8, 4))
         for i, mes in enumerate(nomes, start=1):
             _label(hdr, mes, col=i, font_size=11, bold=True, color="#FFFFFF", padx=0)
-        _label(hdr, "A/V %", col=n+1, font_size=11, bold=True, color="#FFFFFF", padx=0)
+        _label(hdr, "TOTAL ANO", col=n+1, font_size=11, bold=True, color="#FFFFFF", padx=0)
+        _label(hdr, "A/V %", col=n+2, font_size=11, bold=True, color="#FFFFFF", padx=0)
 
         # ── Veículos ──────────────────────────────────────────
         categoria_atual = None
@@ -292,16 +296,15 @@ class TelaRelatorio(ctk.CTkFrame):
                        if val else "-")
                 _label(row_v, txt, col=i, font_size=10,
                        color=("gray10","gray90") if val else ("gray50","gray50"), pady=5, padx=0)
-            _label(row_v, av_texto, col=n+1, font_size=10, bold=True,
+
+            total_txt = (f"R$ {total_veiculo:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
+                         if total_veiculo > 0 else "-")
+            _label(row_v, total_txt, col=n+1, font_size=10, bold=True,
+                   color=("gray10","gray90") if total_veiculo > 0 else ("gray50","gray50"), pady=5, padx=0)
+            _label(row_v, av_texto, col=n+2, font_size=10, bold=True,
                    color=av_cor, pady=5, padx=0)
 
-            # Linha A/H% do veículo
-            row_ah = _row_grid(self.frame_tabela, n, fg_color=("gray86", "gray23"))
-            _label(row_ah, "", col=0, padx=(8, 4), pady=3)
-            for i, idx in enumerate(meses_idx, start=1):
-                txt, cor = self._ah_veiculo(valores, idx)
-                _label(row_ah, txt, col=i, font_size=9, color=cor, pady=3, padx=0)
-            _label(row_ah, "", col=n+1, pady=3, padx=0)
+
 
         # ── Separador ─────────────────────────────────────────
         ctk.CTkFrame(self.frame_tabela, fg_color=("gray75","gray35"), height=2).pack(
@@ -316,7 +319,12 @@ class TelaRelatorio(ctk.CTkFrame):
             txt = (f"R$ {val:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
                    if val else "-")
             _label(row_t, txt, col=i, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
-        _label(row_t, "100%", col=n+1, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
+
+        total_ano = sum(totais_mes)
+        total_ano_txt = (f"R$ {total_ano:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
+                         if total_ano > 0 else "-")
+        _label(row_t, total_ano_txt, col=n+1, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
+        _label(row_t, "100%", col=n+2, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
 
         # ── A/H % geral ───────────────────────────────────────
         row_ah_g = _row_grid(self.frame_tabela, n, fg_color="#1E293B", corner_radius=6)
@@ -326,6 +334,7 @@ class TelaRelatorio(ctk.CTkFrame):
             txt, cor = self._ah_total(totais_mes, idx)
             _label(row_ah_g, txt, col=i, font_size=10, bold=True, color=cor, pady=6, padx=0)
         _label(row_ah_g, "-", col=n+1, font_size=10, color="#FFFFFF", pady=6, padx=0)
+        _label(row_ah_g, "-", col=n+2, font_size=10, color="#FFFFFF", pady=6, padx=0)
 
     # ── Helpers A/H ───────────────────────────────────────────────────────────
 
