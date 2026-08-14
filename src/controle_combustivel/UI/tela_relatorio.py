@@ -4,29 +4,8 @@ import customtkinter as ctk
 from datetime import datetime
 from tkinter import filedialog
 from functions.relatorio import gerar_relatorio, exportar_excel
-from functions.utils import calcular_av, calcular_ah
-
-CORES = {
-    "header":    "#1C1917",
-    "primario":  "#F97316",
-    "hover":     "#EA6C0A",
-    "sucesso":   "#10B981",
-    "perigo":    "#EF4444",
-    "texto":     "#1F2937",
-    "texto_sec": "#6B7280",
-    "borda":     "#D1D5DB",
-    "card":      "#FFFFFF",
-    "fundo":     "#F0F4F8",
-}
-
-MESES_ABREV = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
-               "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"]
-
-MESES = [
-    "Janeiro", "Fevereiro", "Março", "Abril",
-    "Maio", "Junho", "Julho", "Agosto",
-    "Setembro", "Outubro", "Novembro", "Dezembro",
-]
+from functions.utils import calcular_av, calcular_ah, formatar_moeda
+from theme import CORES, MESES, MESES_ABREV
 
 # Colunas fixas — só nome e A/V% têm tamanho definido
 # As colunas de mês se esticam automaticamente via grid weight=1
@@ -292,13 +271,11 @@ class TelaRelatorio(ctk.CTkFrame):
                    anchor="w", padx=(8, 4), pady=5)
             for i, idx in enumerate(meses_idx, start=1):
                 val = valores[idx]
-                txt = (f"R$ {val:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
-                       if val else "-")
+                txt = formatar_moeda(val)
                 _label(row_v, txt, col=i, font_size=10,
                        color=("gray10","gray90") if val else ("gray50","gray50"), pady=5, padx=0)
 
-            total_txt = (f"R$ {total_veiculo:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
-                         if total_veiculo > 0 else "-")
+            total_txt = formatar_moeda(total_veiculo)
             _label(row_v, total_txt, col=n+1, font_size=10, bold=True,
                    color=("gray10","gray90") if total_veiculo > 0 else ("gray50","gray50"), pady=5, padx=0)
             _label(row_v, av_texto, col=n+2, font_size=10, bold=True,
@@ -316,13 +293,11 @@ class TelaRelatorio(ctk.CTkFrame):
                color="#FFFFFF", anchor="w", padx=(8, 4), pady=7)
         for i, idx in enumerate(meses_idx, start=1):
             val = totais_mes[idx]
-            txt = (f"R$ {val:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
-                   if val else "-")
+            txt = formatar_moeda(val)
             _label(row_t, txt, col=i, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
 
         total_ano = sum(totais_mes)
-        total_ano_txt = (f"R$ {total_ano:,.2f}".replace(",","X").replace(".","," ).replace("X",".")
-                         if total_ano > 0 else "-")
+        total_ano_txt = formatar_moeda(total_ano)
         _label(row_t, total_ano_txt, col=n+1, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
         _label(row_t, "100%", col=n+2, font_size=10, bold=True, color="#FFFFFF", pady=7, padx=0)
 

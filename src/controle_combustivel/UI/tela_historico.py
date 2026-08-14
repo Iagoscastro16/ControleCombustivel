@@ -2,25 +2,9 @@ import customtkinter as ctk
 from datetime import datetime
 from functions.abastecimentos import listar_abastecimentos, excluir_abastecimento, editar_abastecimentos
 from functions.veiculos import listar_veiculos
-
-CORES = {
-    "header":    "#1C1917",
-    "primario":  "#F97316",
-    "hover":     "#EA6C0A",
-    "sucesso":   "#10B981",
-    "perigo":    "#EF4444",
-    "texto":     "#1F2937",
-    "texto_sec": "#6B7280",
-    "borda":     "#D1D5DB",
-    "card":      "#FFFFFF",
-    "fundo":     "#F0F4F8",
-}
-
-MESES = [
-    "Janeiro", "Fevereiro", "Março", "Abril",
-    "Maio", "Junho", "Julho", "Agosto",
-    "Setembro", "Outubro", "Novembro", "Dezembro",
-]
+from functions.utils import formatar_moeda
+from theme import CORES, MESES
+from widgets import confirmar_acao
 
 
 class TelaHistorico(ctk.CTkFrame):
@@ -198,7 +182,7 @@ class TelaHistorico(ctk.CTkFrame):
 
         for id, data, nome, valor in resultado:
             data_fmt = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
-            valor_fmt = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            valor_fmt = formatar_moeda(valor)
 
             row = ctk.CTkFrame(self.frame_lista, fg_color=("gray92", "gray20"), corner_radius=4)
             row.pack(fill="x", pady=1)
@@ -241,45 +225,13 @@ class TelaHistorico(ctk.CTkFrame):
             ).pack(side="left")
 
     def _confirmar_exclusao(self, id):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Confirmar exclusão")
-        dialog.resizable(False, False)
-
-        dialog.update_idletasks()
-        w, h = 340, 180
-        x = (dialog.winfo_screenwidth() // 2) - (w // 2)
-        y = (dialog.winfo_screenheight() // 2) - (h // 2)
-        dialog.geometry(f"{w}x{h}+{x}+{y}")
-        dialog.after(100, lambda: [dialog.grab_set(), dialog.lift(), dialog.focus_force()])
-
-        ctk.CTkLabel(
-            dialog,
-            text="Deseja excluir este lançamento?",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            wraplength=280,
-        ).pack(pady=(24, 8))
-
-        ctk.CTkLabel(
-            dialog,
-            text="Essa ação não pode ser desfeita.",
-            font=ctk.CTkFont(size=12),
-            text_color=("gray40", "gray60"),
-        ).pack()
-
-        frame_btns = ctk.CTkFrame(dialog, fg_color="transparent")
-        frame_btns.pack(pady=16)
-
-        ctk.CTkButton(
-            frame_btns, text="Cancelar", width=110,
-            fg_color="#374151", hover_color="#4B5563",
-            command=dialog.destroy,
-        ).pack(side="left", padx=6)
-
-        ctk.CTkButton(
-            frame_btns, text="Excluir", width=110,
-            fg_color=CORES["perigo"], hover_color="#DC2626",
-            command=lambda: [dialog.destroy(), self._excluir(id)],
-        ).pack(side="left", padx=6)
+        confirmar_acao(
+            self,
+            titulo="Deseja excluir este lançamento?",
+            mensagem="Essa ação não pode ser desfeita.",
+            funcao_sim=lambda: self._excluir(id),
+            texto_botao="Excluir",
+        )
 
     def _excluir(self, id):
         resultado = excluir_abastecimento(id)

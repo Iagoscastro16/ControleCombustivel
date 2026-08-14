@@ -24,3 +24,12 @@ def calcular_ah(atual,anterior):
     if anterior == 0:
         return 0
     return (atual / anterior - 1) * 100
+
+def formatar_moeda(valor, vazio="-"):
+    """
+    Formata um número no padrão monetário brasileiro (R$ 1.234,56).
+    Se valor for None, 0 ou vazio, retorna o texto de 'vazio' (padrão "-").
+    """
+    if not valor:
+        return vazio
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")

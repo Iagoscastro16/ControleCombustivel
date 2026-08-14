@@ -66,3 +66,14 @@ def ativar_veiculo(id):
     return {"success": True,
             "message": "Veículo reativado com sucesso"
             }
+
+def pesquisar_veiculos(nome):
+    try:    
+        with get_connection() as conn:
+           cursor = conn.execute("SELECT id FROM veiculos WHERE nome = ?", (nome,))
+           data = cursor.fetchone()
+           return data[0]
+
+    except Exception as e:
+        return {"success": False,
+                "message":f"Erro ao selecionar veiculo: {e}"}

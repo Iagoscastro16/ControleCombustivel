@@ -1,20 +1,7 @@
 import customtkinter as ctk
 from functions.veiculos import listar_veiculos, adicionar_veiculo, remover_veiculo, ativar_veiculo
-
-CORES = {
-    "header":    "#1C1917",
-    "primario":  "#F97316",
-    "hover":     "#EA6C0A",
-    "sucesso":   "#10B981",
-    "perigo":    "#EF4444",
-    "texto":     "#1F2937",
-    "texto_sec": "#6B7280",
-    "borda":     "#D1D5DB",
-    "card":      "#FFFFFF",
-    "fundo":     "#F0F4F8",
-}
-
-CATEGORIAS = ["Utilitários", "Passeio", "Outros", "Diretoria"]
+from theme import CORES, CATEGORIAS
+from widgets import confirmar_acao
 
 
 class TelaVeiculos(ctk.CTkFrame):
@@ -217,51 +204,13 @@ class TelaVeiculos(ctk.CTkFrame):
                 ).pack(side="right", padx=8, pady=6)
 
     def _confirmar_remocao(self, id):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Confirmar remoção")
-        dialog.resizable(False, False)
-
-        dialog.update_idletasks()
-        w, h = 340, 160
-        x = (dialog.winfo_screenwidth() // 2) - (w // 2)
-        y = (dialog.winfo_screenheight() // 2) - (h // 2)
-        dialog.geometry(f"{w}x{h}+{x}+{y}")
-        dialog.after(100, lambda: [dialog.grab_set(), dialog.lift(), dialog.focus_force()])
-
-        ctk.CTkLabel(
-            dialog,
-            text="Deseja remover este veículo?",
-            font=ctk.CTkFont(size=14, weight="bold"),
-            wraplength=280,
-        ).pack(pady=(24, 8))
-
-        ctk.CTkLabel(
-            dialog,
-            text="Essa ação não pode ser desfeita.",
-            font=ctk.CTkFont(size=12),
-            text_color=("gray40", "gray60"),
-        ).pack()
-
-        frame_btns = ctk.CTkFrame(dialog, fg_color="transparent")
-        frame_btns.pack(pady=16)
-
-        ctk.CTkButton(
-            frame_btns,
-            text="Cancelar",
-            width=110,
-            fg_color="#374151",
-            hover_color="#4B5563",
-            command=dialog.destroy,
-        ).pack(side="left", padx=6)
-
-        ctk.CTkButton(
-            frame_btns,
-            text="Remover",
-            width=110,
-            fg_color=CORES["perigo"],
-            hover_color="#DC2626",
-            command=lambda: [dialog.destroy(), self._remover(id)],
-        ).pack(side="left", padx=6)
+        confirmar_acao(
+            self,
+            titulo="Deseja remover este veículo?",
+            mensagem="Essa ação não pode ser desfeita.",
+            funcao_sim=lambda: self._remover(id),
+            texto_botao="Remover",
+        )
 
     def _mostrar_feedback(self, msg, sucesso=True):
         cor = CORES["sucesso"] if sucesso else CORES["perigo"]

@@ -3,20 +3,7 @@ from datetime import datetime
 from functions.veiculos import listar_veiculos
 from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
 from functions.utils import normalizar_data
-
-CORES = {
-    "header":    "#1C1917",
-    "primario":  "#F97316",
-    "hover":     "#EA6C0A",
-    "sucesso":   "#10B981",
-    "perigo":    "#EF4444",
-    "texto":     "#1F2937",
-    "texto_sec": "#6B7280",
-    "borda":     "#D1D5DB",
-    "card":      "#FFFFFF",
-    "accent":    "#FED7AA",
-    "fundo":     "#F0F4F8",
-}
+from theme import CORES
 
 
 class TelaMain(ctk.CTkFrame):
