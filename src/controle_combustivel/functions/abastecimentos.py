@@ -1,22 +1,17 @@
 from database. connection import get_connection
 from datetime import datetime
 
-def inserir_abastecimento(data,veiculo_nome, valor):
+def inserir_abastecimento(data,veiculo_id, valor):
     try:
-        with get_connection() as conn:
-            cursor = conn.execute("SELECT id FROM veiculos WHERE nome = ?", (veiculo_nome,))
-            veiculo_id = cursor.fetchone()[0]
-            
-            
+        with get_connection() as conn:              
             conn.execute('''
                 
                 INSERT INTO abastecimentos (data, veiculo_id, valor) VALUES (?,?,?)
                                   ''',(data,veiculo_id,valor))
     except Exception as e:
         return {"success": False,
-                "message": f"Erro ao inserir um novo registo: {e}"
-                }
-        
+                "message": f"Erro ao adicionar veiculo: {e}"}
+    
     return {"success": True,
             "message": "Registro criado com sucesso"}
     

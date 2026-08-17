@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
-from functions.veiculos import listar_veiculos
+from functions.veiculos import listar_veiculos, pesquisar_veiculos
 from functions.abastecimentos import inserir_abastecimento, contar_lancamentos_mes
 from functions.utils import normalizar_data
 from theme import CORES
@@ -229,7 +229,8 @@ class TelaMain(ctk.CTkFrame):
             return
 
         valor_float = float(valor.replace(",", "."))
-        resultado = inserir_abastecimento(data_banco, veiculo, valor_float)
+        veiculo_id = pesquisar_veiculos(veiculo)
+        resultado = inserir_abastecimento(data_banco, veiculo_id, valor_float)
 
         if resultado["success"]:
             self._mostrar_feedback("Lançamento registrado!")
