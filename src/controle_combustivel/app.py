@@ -13,12 +13,12 @@ ctk.set_default_color_theme("blue")
 
 inicializar_db()
 
-fazer_backup()
-
 
 janela = ctk.CTk()
-janela.title("Controle de Combustível")
+janela.after(2000, fazer_backup)
 janela.after(100, lambda: janela.state("zoomed"))
+janela.title("Controle de Combustível")
+
 
 telas = {}
 tela_atual = None
