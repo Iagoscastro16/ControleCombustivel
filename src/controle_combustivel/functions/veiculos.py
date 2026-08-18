@@ -72,7 +72,7 @@ def pesquisar_veiculos(nome):
         with get_connection() as conn:
            cursor = conn.execute("SELECT id FROM veiculos WHERE nome = ?", (nome,))
            data = cursor.fetchone()
-           return data[0]
+           return data["id"]
 
     except Exception as e:
         return {"success": False,

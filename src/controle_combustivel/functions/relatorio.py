@@ -21,7 +21,7 @@ def gerar_relatorio(ano, mostrar_inativo=False):
             return cursor.fetchall()
         
     except Exception as e:
-        return {"success": False, 
+        return {"sucess": False, 
                 "message":f"erro ao gerar relatório:{e}"}
 
 

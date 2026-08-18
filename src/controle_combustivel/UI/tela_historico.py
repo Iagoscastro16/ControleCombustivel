@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from datetime import datetime
 from functions.abastecimentos import listar_abastecimentos, excluir_abastecimento, editar_abastecimentos
-from functions.veiculos import listar_veiculos
+from functions.veiculos import listar_veiculos, pesquisar_veiculos
 from functions.utils import formatar_moeda
 from theme import CORES, MESES
 from widgets import confirmar_acao
@@ -180,7 +180,11 @@ class TelaHistorico(ctk.CTkFrame):
             ).pack(pady=40)
             return
 
-        for id, data, nome, valor in resultado:
+        for linha in resultado:
+            id = linha["id"]
+            data = linha["data"]
+            nome = linha["nome"]
+            valor = linha["valor"]
             data_fmt = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
             valor_fmt = formatar_moeda(valor)
 
@@ -307,10 +311,7 @@ class TelaHistorico(ctk.CTkFrame):
                 return
 
             novo_veiculo = combo_veiculo.get()
-            from database.connection import get_connection
-            with get_connection() as conn:
-                cursor = conn.execute("SELECT id FROM veiculos WHERE nome = ?", (novo_veiculo,))
-                veiculo_id = cursor.fetchone()[0]
+            veiculo_id = pesquisar_veiculos(novo_veiculo)
 
             resultado = editar_abastecimentos(id, data=nova_data, veiculo_id=veiculo_id, valor=novo_valor)
             if resultado["success"]:
@@ -352,7 +353,7 @@ class TelaHistorico(ctk.CTkFrame):
     def _listar_veiculos(self):
         resultado = listar_veiculos()
         if isinstance(resultado, list):
-            return [nome for id, nome, categoria in resultado]
+            return [row["nome"] for row in resultado]
         return []
 
     def _listar_anos(self):

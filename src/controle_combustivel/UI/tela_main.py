@@ -205,7 +205,7 @@ class TelaMain(ctk.CTkFrame):
     def _listar_veiculos(self):
         resultado = listar_veiculos()
         if isinstance(resultado, list):
-            return [nome for id, nome, categoria in resultado]
+            return [row["nome"] for row in resultado]
         return []
 
     def _contar_lancamentos_mes(self):

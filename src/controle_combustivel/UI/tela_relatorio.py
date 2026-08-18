@@ -367,7 +367,11 @@ class TelaRelatorio(ctk.CTkFrame):
             return
 
         veiculos_dict = {}
-        for nome, categoria, mes, valor in dados_crus:
+        for linha in dados_crus:
+            nome = linha["nome"]
+            categoria = linha["categoria"]
+            mes = linha["mes"]
+            valor = linha[3]  # sum(a.valor) sem alias na query — acesso posicional aqui
             if nome not in veiculos_dict:
                 veiculos_dict[nome] = {"categoria": categoria, "valores": [0.0] * 12}
             veiculos_dict[nome]["valores"][int(mes) - 1] = valor

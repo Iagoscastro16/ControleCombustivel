@@ -153,11 +153,10 @@ class TelaVeiculos(ctk.CTkFrame):
             return
 
         for registro in veiculos:
-            if len(registro) == 4:
-                id, nome, categoria, ativo = registro
-            else:
-                id, nome, categoria = registro
-                ativo = 1
+            id = registro["id"]
+            nome = registro["nome"]
+            categoria = registro["categoria"]
+            ativo = registro["ativo"] if "ativo" in registro.keys() else 1
 
             row = ctk.CTkFrame(
                 self.frame_lista,
@@ -257,4 +256,4 @@ class TelaVeiculos(ctk.CTkFrame):
             self._mostrar_feedback(resultado["message"], sucesso=False)
     
     def ao_exibir(self):
-        self.entry_nome.focus()
+        self.entry_nome.focus() 

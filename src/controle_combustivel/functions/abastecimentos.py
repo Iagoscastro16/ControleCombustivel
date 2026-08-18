@@ -22,14 +22,12 @@ def contar_lancamentos_mes():
     try:
         with get_connection() as conn:
             ano_mes = datetime.now().strftime("%Y-%m")
-            
-        cursor = conn.execute(
-            "SELECT COUNT(*) FROM abastecimentos WHERE data LIKE ?",
-            (f"{ano_mes}%",)
-        )
-        
-        return cursor.fetchone()[0]
-    
+            cursor = conn.execute(
+                "SELECT COUNT(*) as total FROM abastecimentos WHERE data LIKE ?",
+                (f"{ano_mes}%",)
+            )
+            return cursor.fetchone()["total"]
+
     except Exception as e:
         return {"success": False,
                 "message": f"erro ao listar lançamentos do mês: {e}"
@@ -119,4 +117,4 @@ def editar_abastecimentos(id, data=None, veiculo_id=None, valor=None):
                 return {"success": True, "message": "Abastecimento atualizado com sucesso"}
                 
     except Exception as e:
-        return {"success": False, "message": f"Erro inesperado: {e}"}   
+        return {"success": False, "message": f"Erro inesperado: {e}"}
