@@ -17,7 +17,7 @@ def listar_veiculos(mostrar_inativos=False):
                     ORDER BY categoria, nome ASC 
                         ''')
             
-        return cursor.fetchall() 
+            return cursor.fetchall() 
         
     except Exception as e:
         return {"success": False,
