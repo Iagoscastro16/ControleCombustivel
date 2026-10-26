@@ -13,3 +13,5 @@ build/
 .venv/
 
 seed.py
+
+CLAUDE.md

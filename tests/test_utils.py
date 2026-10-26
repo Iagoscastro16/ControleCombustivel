@@ -1,5 +1,5 @@
 import pytest
-from functions.utils import calcular_av,calcular_ah
+from functions.utils import calcular_av,calcular_ah,normalizar_data
 
 def test_calcular_av_com_sucesso():
     
@@ -55,7 +55,7 @@ def test_calcular_ah_com_sucesso_com_decréscimo():
     
     assert total == pytest.approx(-33.33, abs=0.01)
 
-def test_calcular_ah_anterior__mes_anterior_igual_zero():
+def test_calcular_ah_anterior_mes_anterior_igual_zero():
 
     # Arrange (Preparar)
 
@@ -69,3 +69,87 @@ def test_calcular_ah_anterior__mes_anterior_igual_zero():
     # assert (Verificar)
 
     assert total == 0
+
+def test_normalizar_data_sem_barras_retorna_formato_iso():
+
+    # Arrange (Preparar)
+
+    entrada = "150325"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data == "2025-03-15"
+
+def test_normalizar_data_com_barras_retorna_formato_iso():
+
+    # Arrange (Preparar)
+
+    entrada = "15/03/25"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data == "2025-03-15"
+
+def test_normalizar_data_inexistente_retorna_none():
+
+    # Arrange (Preparar)
+
+    entrada = "319926"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data is None
+
+def test_normalizar_data_tamanho_errado_retorna_none():
+
+    # Arrange (Preparar)
+
+    entrada = "1503"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data is None
+
+def test_normalizar_data_com_letras_retorna_none():
+
+    # Arrange (Preparar)
+
+    entrada = "15032x"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data is None
+
+def test_normalizar_data_com_digito_a_mais_retorna_none():
+
+    # Arrange (Preparar)
+
+    entrada = "1503261"
+
+    # Act (Agir)
+
+    data = normalizar_data(entrada)
+
+    # Assert (Verificar)
+
+    assert data is None
