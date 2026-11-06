@@ -1,5 +1,5 @@
 import pytest
-from functions.utils import calcular_av,calcular_ah,normalizar_data
+from functions.utils import calcular_av,calcular_ah,normalizar_data,formatar_moeda
 
 def test_calcular_av_com_sucesso():
     
@@ -153,3 +153,46 @@ def test_normalizar_data_com_digito_a_mais_retorna_none():
     # Assert (Verificar)
 
     assert data is None
+
+def test_formatar_moeda_com_sucesso():
+
+    # Arrange (Preparar)
+
+    valor = 1234567.89
+
+    # Act (Agir)
+
+    texto = formatar_moeda(valor)
+
+    # Assert (Verificar)
+
+    assert texto == "R$ 1.234.567,89"
+
+@pytest.mark.parametrize("valor", [None, 0, ""])
+def test_formatar_moeda_valor_vazio_retorna_traco(valor):
+
+    # Arrange (Preparar)
+    # valor vem do parametrize
+
+    # Act (Agir)
+
+    texto = formatar_moeda(valor)
+
+    # Assert (Verificar)
+
+    assert texto == "-"
+
+def test_formatar_moeda_valor_vazio_usa_texto_personalizado():
+
+    # Arrange (Preparar)
+
+    valor = 0
+    vazio = "Sem valor"
+
+    # Act (Agir)
+
+    texto = formatar_moeda(valor, vazio=vazio)
+
+    # Assert (Verificar)
+
+    assert texto == "Sem valor"
