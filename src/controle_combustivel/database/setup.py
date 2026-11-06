@@ -4,6 +4,9 @@ from database.connection import  get_connection
 def criar_tabelas():
     try:
         with get_connection() as conn:
+            # BEGIN explícito: sem ele o sqlite3 grava cada CREATE na hora
+            # e o rollback do "with conn" não desfaz a tabela já criada
+            conn.execute("BEGIN")
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS veiculos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -12,12 +15,6 @@ def criar_tabelas():
                     ativo INTEGER NOT NULL DEFAULT 1
                     )
             ''')
-    except Exception as e:
-        return {"success": False,
-                "message": f"Erro na criação da tabela 'veiculos': {e}"
-                }
-    try:        
-        with get_connection() as conn:
             conn.execute('''
                 CREATE TABLE IF NOT EXISTS abastecimentos(
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,7 +26,7 @@ def criar_tabelas():
             ''')
     except Exception as e:
         return {"success": False,
-                "message": f"Erro na criação da tabela 'abastecimentos': {e}"}
+                "message": f"Erro na criação das tabelas: {e}"}
     
     return {"success": True, "message":"Tabelas criadas com sucesso"}
 
@@ -44,5 +41,9 @@ def popular_dados_iniciais():
         pass
     
 def inicializar_db():
-    criar_tabelas()
+    resultado = criar_tabelas()
+    if not resultado["success"]:
+        return resultado
+
     popular_dados_iniciais()
+    return resultado

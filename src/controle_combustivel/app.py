@@ -1,3 +1,6 @@
+import sys
+import tkinter as tk
+from tkinter import messagebox
 import customtkinter as ctk
 from database.setup import inicializar_db
 from UI.tela_main import TelaMain
@@ -11,7 +14,14 @@ from database.backup import fazer_backup
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-inicializar_db()
+resultado_db = inicializar_db()
+if not resultado_db["success"]:
+    # Janela escondida só pra exibir a mensagem, já que a principal ainda não existe
+    raiz = tk.Tk()
+    raiz.withdraw()
+    messagebox.showerror("Erro ao iniciar", resultado_db["message"])
+    raiz.destroy()
+    sys.exit(1)
 
 
 janela = ctk.CTk()
